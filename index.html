@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kameny</title>
+<meta name="description" content="Úkoly podle Zen a hotovo">
+<meta name="theme-color" content="#E8EBE6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141A1D" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8EBE6; --surface:#F7F8F5; --ink:#1E2A2F; --muted:#5F6D74; --line:#D2D8D0; --stone:#A3ADA7;
+  --moss:#3F6B55; --on-moss:#FFFFFF; --moss-soft:#DCE7DF;
+  --ochre:#C98325; --ochre-soft:#EFDDBE; --danger:#B4483C;
+  --pebble:#1E2A2F; --on-pebble:#F2F4F0; --scrim:rgba(20,26,29,.45);
+  --font:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --display:'Bricolage Grotesque','Figtree',system-ui,sans-serif;
+  --nav-h:64px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#141A1D; --surface:#1D2529; --ink:#E5E9E4; --muted:#8D999E; --line:#2B353A; --stone:#56636A;
+    --moss:#86B596; --on-moss:#10201A; --moss-soft:#223229;
+    --ochre:#E0A24B; --ochre-soft:#3A2E1C; --danger:#E07A6C;
+    --pebble:#E5E9E4; --on-pebble:#141A1D; --scrim:rgba(0,0,0,.6);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--font);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit}
+input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--moss);outline-offset:2px;border-radius:8px}
+svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+.app{max-width:640px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 22px) 18px calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 110px)}
+header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+h1{font-family:var(--display);font-weight:800;font-size:2.5rem;line-height:1;letter-spacing:-.025em}
+.sub{color:var(--muted);margin-top:6px;font-size:.95rem}
+.iconbtn{position:relative;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--muted);flex:none}
+.iconbtn:active{background:var(--line)}
+.dot{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--stone);border:2px solid var(--bg)}
+.dot.ok{background:var(--moss)} .dot.err{background:var(--danger)} .dot.busy{background:var(--ochre)}
+
+h2{font-family:var(--display);font-weight:600;font-size:1.2rem;letter-spacing:-.01em;margin:30px 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h2 small{font-family:var(--font);font-weight:500;color:var(--muted);font-size:.88rem}
+.hint{color:var(--muted);font-size:.92rem}
+.hint.pad{margin:14px 2px 12px}
+
+/* Kameny — tvar oblázků je jediná výrazná věc v celé appce */
+.pebble{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);padding:16px 16px 16px 18px;margin-bottom:10px;border-radius:30px 38px 32px 40px / 34px 30px 40px 34px}
+.pebble:nth-child(3n+1){border-radius:38px 30px 40px 32px / 30px 38px 32px 40px}
+.pebble:nth-child(3n+2){border-radius:34px 42px 30px 36px / 40px 32px 38px 30px}
+.pebble .t{flex:1;min-width:0;font-weight:500;cursor:pointer;overflow-wrap:anywhere}
+.pebble.is-done .t{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--stone)}
+.pebble.lead{flex-direction:column;align-items:stretch;gap:0;background:var(--pebble);color:var(--on-pebble);border:0;padding:24px 24px 22px;border-radius:52px 64px 46px 70px / 56px 46px 64px 50px;margin-bottom:14px}
+.lead .lbl{font-size:.85rem;opacity:.7;font-weight:600}
+.lead .ttl{font-family:var(--display);font-size:1.75rem;font-weight:600;line-height:1.12;letter-spacing:-.015em;margin:6px 0 4px;cursor:pointer;overflow-wrap:anywhere}
+.lead .note{opacity:.75;font-size:.95rem;margin-top:4px;white-space:pre-wrap}
+.lead-acts{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+
+.chk{width:30px;height:30px;border-radius:50%;border:2px solid var(--stone);display:grid;place-items:center;flex:none;color:transparent;transition:background .15s,border-color .15s}
+.chk svg{width:16px;height:16px;stroke-width:3}
+.chk.on{background:var(--ochre);border-color:var(--ochre);color:#fff}
+.chk:active{transform:scale(.9)}
+
+.row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .t{flex:1;min-width:0;cursor:pointer;overflow-wrap:anywhere}
+.row .t small{display:block;color:var(--muted);font-size:.83rem;margin-top:1px}
+.row.is-done .t{color:var(--muted)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:2px 14px}
+
+.star{width:40px;height:40px;display:grid;place-items:center;color:var(--stone);border-radius:50%;flex:none}
+.star.on{color:var(--ochre)} .star.on svg{fill:var(--ochre)}
+.rock-ico{color:var(--moss);display:grid;place-items:center}
+.tag{display:inline-flex;align-items:center;gap:4px;color:var(--moss);font-weight:600}
+.tag svg{width:15px;height:15px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 18px;border-radius:999px;background:var(--moss);color:var(--on-moss);font-weight:600;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn.small{padding:7px 13px;font-size:.88rem}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.ochre{background:var(--ochre);color:#fff}
+.btn.inv{background:transparent;color:var(--on-pebble);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--on-pebble) 35%,transparent)}
+.btn.danger{color:var(--danger)}
+.btn.wide{width:100%}
+.addline{display:block;width:100%;padding:14px;border-radius:30px;border:1.5px dashed var(--stone);color:var(--muted);font-weight:600;text-align:center;margin-top:4px}
+
+.capture{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 18px}
+.capture input{flex:1;min-width:0;border:0;background:transparent;outline:none;padding:6px 0}
+.capture:focus-within{border-color:var(--moss)}
+
+.inbox-item{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:14px 14px 12px;margin-bottom:10px}
+.inbox-item .t{font-weight:500;cursor:pointer;overflow-wrap:anywhere;padding:0 2px}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.act{padding:7px 12px;border-radius:999px;background:var(--bg);font-size:.86rem;font-weight:600}
+.act.go{background:var(--moss-soft);color:var(--moss)}
+.act.danger{color:var(--danger)}
+
+.empty{padding:26px 22px;border-radius:30px 40px 34px 44px / 38px 30px 44px 34px;background:var(--surface);border:1px solid var(--line)}
+.empty .big{font-family:var(--display);font-weight:600;font-size:1.3rem;margin-bottom:4px}
+.empty .btn{margin-top:16px}
+.empty.win{background:var(--ochre-soft);border-color:transparent}
+
+.goal{display:block;width:100%;background:var(--surface);border-left:3px solid var(--ochre);border-radius:4px 16px 16px 4px;padding:10px 14px;font-weight:600}
+.goal span{display:block;font-size:.8rem;font-weight:500;color:var(--muted)}
+.nudge{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:12px 14px;border-radius:18px;background:var(--moss-soft);color:var(--moss);font-weight:600}
+
+.rockcard{flex-direction:column;align-items:stretch;gap:12px}
+.rtop{display:flex;align-items:center;gap:12px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day{height:32px;border-radius:10px;font-size:.8rem;font-weight:600;background:var(--bg);color:var(--muted);text-align:center}
+.day.today{box-shadow:inset 0 0 0 1.5px var(--moss)}
+.day.on{background:var(--moss);color:var(--on-moss);box-shadow:none}
+
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:76px;margin-top:6px}
+.bar{background:var(--ochre-soft);border-radius:8px 8px 4px 4px;min-height:5px}
+.bar.today{background:var(--ochre)}
+.barlbl{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:6px;font-size:.78rem;color:var(--muted);text-align:center}
+.barlbl b{display:block;color:var(--ink);font-weight:600}
+
+/* Spodní navigace */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:var(--nav-h)}
+nav.tabs button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.74rem;font-weight:600;color:var(--muted);text-align:center}
+nav.tabs button.on{color:var(--moss)}
+.badge{position:absolute;top:7px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--ochre);color:#fff;font-size:.7rem;line-height:18px}
+
+.fab{position:fixed;z-index:21;right:max(18px,calc(50vw - 302px));bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 16px);width:62px;height:58px;display:grid;place-items:center;background:var(--pebble);color:var(--on-pebble);border-radius:30px 34px 28px 36px / 32px 28px 34px 30px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.fab svg{width:26px;height:26px;stroke-width:2.4}
+.fab:active{transform:scale(.94)}
+
+/* Spodní panel */
+.scrim{position:fixed;inset:0;z-index:40;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;z-index:41;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;max-height:88vh;overflow:auto;background:var(--surface);border-radius:28px 28px 0 0;padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateY(105%);transition:transform .25s cubic-bezier(.2,.8,.3,1)}
+.sheet.open{transform:none}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+.sheet h3{font-family:var(--display);font-weight:600;font-size:1.35rem;margin-bottom:14px}
+.field{display:block;width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);outline:none;margin-bottom:10px}
+.field:focus{border-color:var(--moss)}
+textarea.field{min-height:90px;resize:vertical}
+label.lab{display:block;font-size:.85rem;color:var(--muted);margin:4px 2px 6px}
+.sheet-acts{display:flex;gap:10px;justify-content:space-between;margin-top:8px}
+.seg{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.seg button{padding:8px 14px;border-radius:999px;background:var(--bg);font-weight:600;font-size:.9rem}
+.seg button.on{background:var(--moss);color:var(--on-moss)}
+.pickrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 4px;border-bottom:1px solid var(--line)}
+.pickrow .t{flex:1;min-width:0}
+.pickrow .t small{display:block;color:var(--muted);font-size:.83rem}
+.pickrow .star{pointer-events:none}
+.setsec{padding:14px 0;border-bottom:1px solid var(--line)}
+.setsec:last-child{border-bottom:0}
+.setsec p{margin-bottom:10px}
+.setsec .btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Režim soustředění */
+.focus{position:fixed;inset:0;z-index:50;background:var(--pebble);color:var(--on-pebble);display:none;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 16px) 26px calc(env(safe-area-inset-bottom,0px) + 28px)}
+.focus.open{display:flex}
+.fbody{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:560px;width:100%;margin:0 auto}
+.flbl{opacity:.65;font-weight:600}
+.fttl{font-family:var(--display);font-weight:800;font-size:clamp(2rem,9vw,3.2rem);line-height:1.05;letter-spacing:-.025em;margin:10px 0 14px;overflow-wrap:anywhere}
+.fnote{opacity:.75;white-space:pre-wrap}
+.ftimer{margin-top:26px;font-variant-numeric:tabular-nums;opacity:.6;font-size:1.1rem}
+.fbtns{max-width:560px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.fbtns .btn{padding:17px;font-size:1.1rem}
+.fclose{align-self:flex-start;padding:8px 4px;opacity:.75;font-weight:600}
+
+.toast{position:fixed;z-index:60;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 90px);transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--pebble);color:var(--on-pebble);padding:11px 18px;border-radius:999px;font-weight:600;font-size:.92rem;display:flex;gap:14px;align-items:center;transition:all .2s;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{color:var(--ochre);font-weight:700}
+
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden}
+.confetti i{position:absolute;top:-14px;width:10px;height:8px;border-radius:50% 45% 55% 40%;animation:fall 1.9s cubic-bezier(.25,.6,.4,1) forwards}
+@keyframes fall{to{transform:translate(var(--x),105vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div><h1 id="title">Dnes</h1><p class="sub" id="sub"></p></div>
+    <button class="iconbtn" data-act="settings" aria-label="Nastavení a synchronizace">
+      <svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
+      <span class="dot" id="syncDot"></span>
+    </button>
+  </header>
+  <main id="view"></main>
+</div>
+
+<button class="fab" data-act="capture" aria-label="Rychle zapsat do inboxu"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+
+<nav class="tabs"><div class="in">
+  <button data-act="go" data-v="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>Dnes</button>
+  <button data-act="go" data-v="inbox"><svg viewBox="0 0 24 24"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>Inbox<span class="badge" id="inboxBadge" hidden></span></button>
+  <button data-act="go" data-v="tasks"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.5M4 12h.5M4 18h.5"/></svg>Úkoly</button>
+  <button data-act="go" data-v="week"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="8" ry="3"/><ellipse cx="12" cy="12.3" rx="5.5" ry="2.6"/><ellipse cx="12" cy="7.2" rx="3" ry="2"/></svg>Týden</button>
+</div></nav>
+
+<div class="scrim" id="scrim" data-act="closeSheet"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+<div class="focus" id="focus" role="dialog" aria-modal="true"></div>
+<div class="toast" id="toast" role="status"></div>
+<input type="file" id="importFile" accept="application/json" hidden>
+
+<script>
+/* ============================================================
+   Synchronizace: vlož sem konfiguraci z Firebase (viz README).
+   Dokud je null, úkoly se ukládají jen v tomto zařízení.
+   ============================================================ */
+const FIREBASE_CONFIG = null;
+/* Příklad:
+const FIREBASE_CONFIG = {
+  apiKey: "AIza...",
+  authDomain: "kameny-xxxx.firebaseapp.com",
+  projectId: "kameny-xxxx",
+  appId: "1:123:web:abc"
+};
+*/
+
+const VERSION = '1.0.0';
+const LS_KEY = 'kameny.v1';
+const MAX_MIT = 3, MAX_ROCKS = 6;
+const DAYS = ['Po','Út','St','Čt','Pá','So','Ne'];
+const DAY = 86400000;
+
+const ICON = {
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  star:'<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+  rock:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="8" ry="3"/><ellipse cx="12" cy="12.3" rx="5.5" ry="2.6"/><ellipse cx="12" cy="7.2" rx="3" ry="2"/></svg>',
+  x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+};
+
+/* ---------- pomocné ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const pl = (n, a, b, c) => n === 1 ? a : (n >= 2 && n <= 4 ? b : c);
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function dow(d = new Date()) { return (d.getDay() + 6) % 7; }
+function weekStart(d = new Date()) { const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - dow(x)); return x; }
+function weekInfo(d = new Date()) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const wd = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - wd);
+  const y = t.getUTCFullYear(); const w = Math.ceil(((t - Date.UTC(y,0,1)) / DAY + 1) / 7);
+  return { key: y + '-W' + String(w).padStart(2,'0'), num: w };
+}
+const weekKey = d => weekInfo(d).key;
+
+/* ---------- data ---------- */
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if (s && s.tasks) return s; } catch (e) {}
+  return { tasks: {}, goal: { t: '', u: 0 } };
+}
+let S = load();
+let view = localStorage.getItem('kameny.view') || 'today';
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
+function commit() { saveLocal(); scheduleSync(); render(); }
+const alive = () => Object.values(S.tasks).filter(t => !t.del);
+
+function addTask(text, extra = {}) {
+  const n = Date.now();
+  const t = { id: newId(), t: text.trim(), note: '', st: 'inbox', who: '', rock: null, day: null, mit: null, mo: 0, c: n, u: n, done: 0, prev: null, ...extra };
+  S.tasks[t.id] = t; return t;
+}
+function upd(id, patch) { const t = S.tasks[id]; if (t) Object.assign(t, patch, { u: Date.now() }); }
+function isDoneToday(t) { return t.st === 'done' && t.done && dayKey(new Date(t.done)) === dayKey(); }
+function todayMits() { const td = dayKey(); return alive().filter(t => t.mit === td).sort((a,b) => a.mo - b.mo); }
+
+function toggleDone(id) {
+  const t = S.tasks[id]; if (!t) return false;
+  if (t.st === 'done') { upd(id, { st: t.prev || 'list', done: 0 }); return false; }
+  upd(id, { prev: t.st, st: 'done', done: Date.now() }); return true;
+}
+function toggleMit(id) {
+  const t = S.tasks[id], td = dayKey(); if (!t) return;
+  if (t.mit === td) { upd(id, { mit: null }); return; }
+  if (todayMits().length >= MAX_MIT) { toast('Nejvýš 3 NÚ na den. Zbytek počká.'); return; }
+  upd(id, { mit: td, mo: Date.now(), st: t.st === 'inbox' ? 'list' : t.st });
+  if (t.st === 'done') upd(id, { st: 'list', done: 0 });
+}
+function toggleRock(id) {
+  const t = S.tasks[id], wk = weekKey(); if (!t) return;
+  if (t.rock === wk) { upd(id, { rock: null, day: null }); return; }
+  upd(id, { rock: wk, day: null, st: t.st === 'inbox' ? 'list' : t.st });
+}
+
+/* ---------- vykreslení ---------- */
+function render() {
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === view));
+  const n = alive().filter(t => t.st === 'inbox').length;
+  const badge = $('#inboxBadge'); badge.textContent = n; badge.hidden = !n;
+  const V = ({ today: vToday, inbox: vInbox, tasks: vTasks, week: vWeek }[view] || vToday)();
+  $('#title').textContent = V.title; $('#sub').textContent = V.sub; $('#view').innerHTML = V.html;
+}
+
+function pebbleRow(t, withRemove = true) {
+  const d = t.st === 'done';
+  return `<div class="pebble ${d ? 'is-done' : ''}">
+    <button class="chk ${d ? 'on' : ''}" data-act="done" data-id="${t.id}" aria-label="${d ? 'Vrátit' : 'Hotovo'}">${ICON.check}</button>
+    <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
+    ${withRemove && !d ? `<button class="star" data-act="mit" data-id="${t.id}" aria-label="Odebrat z NÚ">${ICON.x}</button>` : ''}
+  </div>`;
+}
+function leadPebble(t) {
+  return `<div class="pebble lead">
+    <span class="lbl">Teď dělám</span>
+    <div class="ttl" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
+    ${t.note ? `<p class="note">${esc(t.note)}</p>` : ''}
+    <div class="lead-acts">
+      <button class="btn ochre" data-act="focus">Soustředit se</button>
+      <button class="btn inv" data-act="done" data-id="${t.id}">Hotovo</button>
+    </div>
+  </div>`;
+}
+function metaLine(t) {
+  const bits = [];
+  if (t.rock === weekKey()) bits.push(`<span class="tag">${ICON.rock}Velký kámen${t.day != null ? ', ' + DAYS[t.day] : ''}</span>`);
+  if (t.st === 'wait' && t.who) bits.push('Čeká na: ' + esc(t.who));
+  if (t.note) bits.push(esc(t.note.split('\n')[0].slice(0, 70)));
+  return bits.length ? `<small>${bits.join(' — ')}</small>` : '';
+}
+function listRow(t) {
+  const td = dayKey(), d = t.st === 'done';
+  return `<div class="row ${d ? 'is-done' : ''}">
+    <button class="chk ${d ? 'on' : ''}" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
+    <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
+    ${d ? '' : `<button class="star ${t.mit === td ? 'on' : ''}" data-act="mit" data-id="${t.id}" aria-label="NÚ na dnes">${ICON.star}</button>`}
+  </div>`;
+}
+
+function vToday() {
+  const td = dayKey(), wk = weekKey(), di = dow(), all = alive();
+  const mits = todayMits();
+  const open = mits.filter(t => t.st !== 'done'), doneM = mits.filter(t => t.st === 'done');
+  let h = '';
+  if (S.goal.t) h += `<button class="goal" data-act="go" data-v="week"><span>Roční cíl</span>${esc(S.goal.t)}</button>`;
+
+  h += `<h2>Nejdůležitější úkoly <small>${mits.length} ze ${MAX_MIT}</small></h2>`;
+  if (!mits.length) {
+    h += `<div class="empty"><p class="big">Co dnes musí být hotové?</p>
+      <p class="hint">Vyber 1 až 3 nejdůležitější úkoly. Ten první udělej ještě dřív, než otevřeš e-mail.</p>
+      <button class="btn" data-act="pickMit">Vybrat NÚ</button></div>`;
+  } else {
+    open.forEach((t, i) => { h += i === 0 ? leadPebble(t) : pebbleRow(t); });
+    if (!open.length) h += `<div class="empty win"><p class="big">Všechny NÚ jsou hotové.</p><p class="hint">Ohlédni se, co jsi dnes zvládl, a dej si odměnu.</p></div>`;
+    doneM.forEach(t => h += pebbleRow(t, false));
+    if (mits.length < MAX_MIT) h += `<button class="addline" data-act="pickMit">Přidat NÚ</button>`;
+  }
+
+  const rocksToday = all.filter(t => t.rock === wk && t.day === di && t.st !== 'done' && t.mit !== td);
+  if (rocksToday.length) {
+    h += `<h2>Velké kameny na dnes</h2><div class="list">` + rocksToday.map(t => `<div class="row">
+      <span class="rock-ico">${ICON.rock}</span><div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
+      <button class="btn small" data-act="mit" data-id="${t.id}">Na dnes</button></div>`).join('') + `</div>`;
+  }
+  if (!all.some(t => t.rock === wk)) {
+    h += `<button class="nudge" data-act="go" data-v="week">${ICON.rock}Nový týden: vyber si velké kameny</button>`;
+  }
+
+  const doneToday = all.filter(isDoneToday).sort((a,b) => b.done - a.done);
+  h += `<h2>Dnes hotovo <small>${doneToday.length}</small></h2>`;
+  h += doneToday.length ? `<div class="list">${doneToday.map(listRow).join('')}</div>`
+                        : `<p class="hint">Zatím nic. Každý dokončený úkol se objeví tady.</p>`;
+  return { title: 'Dnes', sub: cap(new Date().toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long' })), html: h };
+}
+
+function vInbox() {
+  const items = alive().filter(t => t.st === 'inbox').sort((a,b) => a.c - b.c);
+  let h = `<form class="capture" data-form="inbox"><input id="cap" placeholder="Co tě napadlo?" autocomplete="off" enterkeyhint="send" aria-label="Nová položka do inboxu"><button class="btn small" type="submit">Přidat</button></form>`;
+  if (!items.length) {
+    h += `<div class="empty win" style="margin-top:14px"><p class="big">Inbox je prázdný.</p><p class="hint">Tak to má být. Nové věci zapiš sem nebo tlačítkem plus.</p></div>`;
+  } else {
+    h += `<p class="hint pad">Rozhodni o každé položce hned. Co zabere do dvou minut, udělej rovnou.</p>`;
+    h += items.map(t => `<div class="inbox-item">
+      <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
+      <div class="actions">
+        <button class="act go" data-act="tolist" data-id="${t.id}">Do úkolů</button>
+        <button class="act" data-act="rock" data-id="${t.id}">Velký kámen</button>
+        <button class="act" data-act="now" data-id="${t.id}">Hotovo hned</button>
+        <button class="act" data-act="deleg" data-id="${t.id}">Delegovat</button>
+        <button class="act danger" data-act="del" data-id="${t.id}">Smazat</button>
+      </div></div>`).join('');
+  }
+  return { title: 'Inbox', sub: items.length ? `${items.length} ${pl(items.length,'položka','položky','položek')} k roztřídění` : 'Všechno roztříděno', html: h };
+}
+
+function vTasks() {
+  const all = alive(), wk = weekKey();
+  const list = all.filter(t => t.st === 'list').sort((a,b) => ((b.rock === wk) - (a.rock === wk)) || a.c - b.c);
+  const wait = all.filter(t => t.st === 'wait').sort((a,b) => a.c - b.c);
+  let h = `<form class="capture" data-form="list"><input id="capList" placeholder="Nový úkol" autocomplete="off" enterkeyhint="send" aria-label="Nový úkol"><button class="btn small" type="submit">Přidat</button></form>`;
+  h += `<p class="hint pad">Hvězdičkou uděláš z úkolu NÚ na dnešek.</p>`;
+  h += list.length ? `<div class="list">${list.map(listRow).join('')}</div>`
+                   : `<div class="empty"><p class="big">Žádné úkoly.</p><p class="hint">Přidej je sem, nebo je roztřiď z inboxu.</p></div>`;
+  if (wait.length) {
+    h += `<h2>Čeká na ostatní <small>${wait.length}</small></h2><div class="list">` + wait.map(t => `<div class="row">
+      <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
+      <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
+      <button class="btn small ghost" data-act="tolist" data-id="${t.id}">Vzít zpět</button></div>`).join('') + `</div>`;
+  }
+  return { title: 'Úkoly', sub: `${list.length} ${pl(list.length,'úkol','úkoly','úkolů')} v seznamu`, html: h };
+}
+
+function vWeek() {
+  const all = alive(), wi = weekInfo(), wk = wi.key, di = dow();
+  const rocks = all.filter(t => t.rock === wk).sort((a,b) => (a.st === 'done') - (b.st === 'done') || (a.day ?? 9) - (b.day ?? 9) || a.c - b.c);
+  const openRocks = rocks.filter(t => t.st !== 'done');
+  const old = all.filter(t => t.rock && t.rock < wk && t.st !== 'done');
+  const ws = weekStart(), we = new Date(ws.getTime() + 6 * DAY);
+  const fmt = d => d.getDate() + '. ' + (d.getMonth() + 1) + '.';
+
+  let h = `<button class="goal" data-act="goal"><span>Roční cíl</span>${S.goal.t ? esc(S.goal.t) : 'Nastav si jeden roční cíl, ke kterému povede každý týden'}</button>`;
+
+  h += `<h2>Velké kameny <small>${rocks.length} ze ${MAX_ROCKS}</small></h2>`;
+  if (!rocks.length) h += `<p class="hint" style="margin-bottom:12px">Co chceš tento týden opravdu zvládnout? Vyber 4 až 6 věcí a rozlož je po jedné až dvou na den, ideálně na ráno.</p>`;
+  h += rocks.map(t => {
+    const d = t.st === 'done';
+    return `<div class="pebble rockcard ${d ? 'is-done' : ''}">
+      <div class="rtop"><button class="chk ${d ? 'on' : ''}" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
+      <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div></div>
+      ${d ? '' : `<div class="days">${DAYS.map((n, i) => `<button class="day ${t.day === i ? 'on' : ''} ${i === di ? 'today' : ''}" data-act="day" data-id="${t.id}" data-d="${i}" aria-label="Naplánovat na ${n}">${n}</button>`).join('')}</div>`}
+    </div>`;
+  }).join('');
+  if (openRocks.length > MAX_ROCKS) h += `<p class="hint" style="margin:4px 2px 10px">Víc než 6 kamenů na týden bývá moc. Zkus některé odložit.</p>`;
+  h += `<button class="addline" data-act="pickRock">Přidat velký kámen</button>`;
+
+  if (old.length) {
+    h += `<h2>Nedokončené z minulých týdnů <small>${old.length}</small></h2><div class="list">` + old.map(t => `<div class="row">
+      <span class="rock-ico">${ICON.rock}</span><div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
+      <button class="btn small" data-act="rock" data-id="${t.id}">Na tento týden</button></div>`).join('') + `</div>`;
+  }
+
+  const doneWeek = all.filter(t => t.st === 'done' && t.done >= ws.getTime()).sort((a,b) => b.done - a.done);
+  const counts = [0,0,0,0,0,0,0]; doneWeek.forEach(t => counts[dow(new Date(t.done))]++);
+  const mx = Math.max(1, ...counts);
+  h += `<h2>Zpětné zrcátko <small>${doneWeek.length} ${pl(doneWeek.length,'hotový úkol','hotové úkoly','hotových úkolů')}</small></h2>`;
+  h += `<div class="bars">${counts.map((c, i) => `<div class="bar ${i === di ? 'today' : ''}" style="height:${Math.round(c / mx * 100)}%"></div>`).join('')}</div>`;
+  h += `<div class="barlbl">${counts.map((c, i) => `<span><b>${c || ''}</b>${DAYS[i]}</span>`).join('')}</div>`;
+  if (doneWeek.length) h += `<div class="list" style="margin-top:14px">${doneWeek.slice(0, 15).map(listRow).join('')}</div>`;
+
+  return { title: 'Týden', sub: `${wi.num}. týden, ${fmt(ws)} – ${fmt(we)}`, html: h };
+}
+
+/* ---------- spodní panel ---------- */
+let sheetKind = null, sheetArg = null;
+function openSheet(kind, arg) { sheetKind = kind; sheetArg = arg; drawSheet(); $('#sheet').classList.add('open'); $('#scrim').classList.add('open'); }
+function closeSheet() { sheetKind = null; $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
+function drawSheet(focusSel) {
+  const el = $('#sheet'); let h = '<div class="grab"></div>';
+  const td = dayKey(), wk = weekKey();
+
+  if (sheetKind === 'capture') {
+    h += `<h3>Zapsat do inboxu</h3>
+      <form data-form="capture"><textarea class="field" id="capT" placeholder="Úkol, nápad, cokoli. Roztřídíš to později." enterkeyhint="send"></textarea>
+      <div class="sheet-acts"><button type="button" class="btn ghost" data-act="closeSheet">Zavřít</button><button class="btn" type="submit">Uložit do inboxu</button></div></form>`;
+    focusSel = focusSel || '#capT';
+  }
+  if (sheetKind === 'edit') {
+    const t = S.tasks[sheetArg]; if (!t) return closeSheet();
+    const st = t.st === 'done' ? (t.prev || 'list') : t.st;
+    h += `<h3>Upravit úkol</h3>
+      <label class="lab" for="eT">Název</label><input class="field" id="eT" value="${esc(t.t)}">
+      <label class="lab" for="eN">Poznámka</label><textarea class="field" id="eN">${esc(t.note)}</textarea>
+      <label class="lab">Kam patří</label>
+      <div class="seg" id="eS">${[['inbox','Inbox'],['list','Úkoly'],['wait','Čeká na']].map(([k,n]) => `<button data-act="seg" data-v="${k}" class="${st === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+      <div id="eWwrap" ${st === 'wait' ? '' : 'hidden'}><label class="lab" for="eW">Na koho čekáš</label><input class="field" id="eW" value="${esc(t.who)}"></div>
+      <div class="seg">
+        <button data-act="eMit" class="${t.mit === td ? 'on' : ''}">NÚ na dnes</button>
+        <button data-act="eRock" class="${t.rock === wk ? 'on' : ''}">Velký kámen týdne</button>
+      </div>
+      <div class="sheet-acts"><button class="btn ghost danger" data-act="delEdit">Smazat</button><button class="btn" data-act="saveEdit">Uložit</button></div>`;
+  }
+  if (sheetKind === 'pickMit') {
+    const n = todayMits().length;
+    const cands = alive().filter(t => t.st === 'list').sort((a,b) => ((b.rock === wk && b.day === dow()) - (a.rock === wk && a.day === dow())) || ((b.rock === wk) - (a.rock === wk)) || a.c - b.c);
+    h += `<h3>NÚ na dnešek <span class="hint">(${n} ze ${MAX_MIT})</span></h3>
+      <form class="capture" data-form="newMit" style="margin-bottom:6px"><input id="nm" placeholder="Nový úkol rovnou jako NÚ" autocomplete="off"><button class="btn small" type="submit">Přidat</button></form>`;
+    h += cands.length ? cands.map(t => `<button class="pickrow" data-act="pickMitRow" data-id="${t.id}"><span class="star ${t.mit === td ? 'on' : ''}">${ICON.star}</span><span class="t">${esc(t.t)}${metaLine(t)}</span></button>`).join('')
+                      : `<p class="hint" style="padding:14px 2px">V seznamu úkolů zatím nic není.</p>`;
+    h += `<div class="sheet-acts" style="margin-top:14px"><span></span><button class="btn" data-act="closeSheet">Hotovo</button></div>`;
+  }
+  if (sheetKind === 'pickRock') {
+    const n = alive().filter(t => t.rock === wk).length;
+    const cands = alive().filter(t => t.st === 'list').sort((a,b) => ((b.rock === wk) - (a.rock === wk)) || a.c - b.c);
+    h += `<h3>Velké kameny týdne <span class="hint">(${n} ze ${MAX_ROCKS})</span></h3>
+      <form class="capture" data-form="newRock" style="margin-bottom:6px"><input id="nr" placeholder="Nový velký kámen" autocomplete="off"><button class="btn small" type="submit">Přidat</button></form>`;
+    h += cands.length ? cands.map(t => `<button class="pickrow" data-act="pickRockRow" data-id="${t.id}"><span class="star ${t.rock === wk ? 'on' : ''}" style="color:${t.rock === wk ? 'var(--moss)' : ''}">${ICON.rock}</span><span class="t">${esc(t.t)}</span></button>`).join('')
+                      : `<p class="hint" style="padding:14px 2px">V seznamu úkolů zatím nic není.</p>`;
+    h += `<div class="sheet-acts" style="margin-top:14px"><span></span><button class="btn" data-act="closeSheet">Hotovo</button></div>`;
+  }
+  if (sheetKind === 'deleg') {
+    const t = S.tasks[sheetArg];
+    h += `<h3>Delegovat</h3><p class="hint" style="margin-bottom:12px">${esc(t?.t)}</p>
+      <form data-form="deleg"><input class="field" id="dw" placeholder="Komu to předáváš?" autocomplete="off">
+      <div class="sheet-acts"><button type="button" class="btn ghost" data-act="closeSheet">Zrušit</button><button class="btn" type="submit">Předat</button></div></form>`;
+    focusSel = focusSel || '#dw';
+  }
+  if (sheetKind === 'goal') {
+    h += `<h3>Roční cíl</h3><p class="hint" style="margin-bottom:12px">Jeden cíl na rok. Každý týden si k němu naplánuj aspoň jeden krok.</p>
+      <form data-form="goal"><input class="field" id="gt" value="${esc(S.goal.t)}" placeholder="Například: Uběhnout půlmaraton">
+      <div class="sheet-acts"><button type="button" class="btn ghost" data-act="closeSheet">Zrušit</button><button class="btn" type="submit">Uložit</button></div></form>`;
+    focusSel = focusSel || '#gt';
+  }
+  if (sheetKind === 'settings') {
+    h += `<h3>Nastavení</h3><div class="setsec"><p><b>Synchronizace</b><br><span class="hint" id="syncLabel">${syncText()}</span></p><div class="btns">`;
+    if (fb && !user) h += `<button class="btn" data-act="signIn">Přihlásit přes Google</button>`;
+    if (fb && user) h += `<button class="btn ghost" data-act="syncNow">Synchronizovat</button><button class="btn ghost" data-act="signOut">Odhlásit</button>`;
+    h += `</div></div>
+      <div class="setsec"><p><b>Záloha</b><br><span class="hint">Stáhni si úkoly jako soubor, nebo je nahraj zpět. Nahrání se sloučí s tím, co už máš.</span></p>
+      <div class="btns"><button class="btn ghost" data-act="export">Stáhnout zálohu</button><button class="btn ghost" data-act="import">Nahrát zálohu</button></div></div>
+      <div class="setsec"><p class="hint">Kameny ${VERSION}. Podle knihy Zen a hotovo od Lea Babauty.</p>
+      <div class="btns"><button class="btn ghost" data-act="reload">Načíst novou verzi</button></div></div>`;
+  }
+  el.innerHTML = h;
+  if (focusSel) setTimeout(() => { const f = $(focusSel); if (f) f.focus(); }, 60);
+}
+
+/* ---------- režim soustředění ---------- */
+let focusTimer = null, focusStart = 0, wakeLock = null;
+function openFocus(after) {
+  const f = $('#focus');
+  const t = todayMits().find(x => x.st !== 'done');
+  clearInterval(focusTimer);
+  if (after) {
+    f.innerHTML = `<div class="fbody"><p class="flbl">Hotovo.</p><h2 class="fttl">Odměň se.<br>${t ? 'A pak hned další.' : 'Všechny NÚ máš za sebou.'}</h2></div>
+      <div class="fbtns">${t ? `<button class="btn ochre" data-act="focus">Další NÚ</button>` : ''}<button class="btn inv" data-act="closeFocus">Zpět na přehled</button></div>`;
+  } else if (!t) {
+    f.innerHTML = `<div class="fbody"><h2 class="fttl">Žádný otevřený NÚ.</h2><p class="fnote">Nejdřív si vyber, co je dnes nejdůležitější.</p></div>
+      <div class="fbtns"><button class="btn inv" data-act="closeFocus">Zpět</button></div>`;
+  } else {
+    focusStart = Date.now();
+    f.innerHTML = `<button class="fclose" data-act="closeFocus">Zpět</button>
+      <div class="fbody"><p class="flbl">Jen tahle jedna věc</p><h2 class="fttl">${esc(t.t)}</h2>
+      ${t.note ? `<p class="fnote">${esc(t.note)}</p>` : ''}<p class="ftimer" id="ftimer">0:00</p></div>
+      <div class="fbtns"><button class="btn ochre" data-act="focusDone" data-id="${t.id}">Hotovo</button></div>`;
+    focusTimer = setInterval(() => {
+      const s = Math.floor((Date.now() - focusStart) / 1000), el = $('#ftimer');
+      if (el) el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    }, 1000);
+    if ('wakeLock' in navigator && !wakeLock) navigator.wakeLock.request('screen').then(w => wakeLock = w).catch(() => {});
+  }
+  f.classList.add('open');
+}
+function closeFocus() {
+  clearInterval(focusTimer); $('#focus').classList.remove('open');
+  if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+}
+
+/* ---------- efekty ---------- */
+let toastT;
+function toast(msg, undo) {
+  const el = $('#toast');
+  el.innerHTML = `<span>${esc(msg)}</span>` + (undo ? '<button id="undoBtn">Vrátit</button>' : '');
+  el.classList.add('show');
+  if (undo) $('#undoBtn').onclick = () => { undo(); el.classList.remove('show'); };
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 3500);
+}
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = document.createElement('div'); c.className = 'confetti';
+  const cols = ['var(--ochre)', 'var(--moss)', '#E9C46A', 'var(--stone)'];
+  for (let i = 0; i < 46; i++) {
+    const s = document.createElement('i');
+    s.style.left = Math.random() * 100 + '%'; s.style.background = cols[i % 4];
+    s.style.animationDelay = Math.random() * .35 + 's';
+    s.style.setProperty('--x', (Math.random() * 140 - 70) + 'px');
+    s.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+    c.appendChild(s);
+  }
+  document.body.appendChild(c); setTimeout(() => c.remove(), 2600);
+}
+function afterDone(id) {
+  const t = S.tasks[id];
+  if (t && t.mit === dayKey()) {
+    const left = todayMits().filter(x => x.st !== 'done').length;
+    confetti();
+    toast(left ? 'NÚ hotový. Odměň se a pokračuj dalším.' : 'Všechny NÚ hotové!', () => { toggleDone(id); commit(); });
+  } else {
+    toast('Hotovo', () => { toggleDone(id); commit(); });
+  }
+}
+
+/* ---------- akce ---------- */
+const ACT = {
+  go(id, b) { view = b.dataset.v; localStorage.setItem('kameny.view', view); render(); scrollTo(0, 0); },
+  done(id) { const now = toggleDone(id); commit(); if (now) afterDone(id); },
+  now(id) { toggleDone(id); commit(); toast('Hotovo za dvě minuty. Tak se to dělá.', () => { toggleDone(id); commit(); }); },
+  tolist(id) { upd(id, { st: 'list', who: '' }); commit(); },
+  rock(id) {
+    const t = S.tasks[id];
+    if (t.rock === weekKey() && t.st !== 'inbox') return;
+    upd(id, { rock: weekKey(), day: null, st: 'list' }); commit(); toast('Přidáno k velkým kamenům týdne');
+  },
+  deleg(id) { openSheet('deleg', id); },
+  del(id) { upd(id, { del: true }); commit(); toast('Smazáno', () => { upd(id, { del: false }); commit(); }); },
+  mit(id) { toggleMit(id); commit(); },
+  day(id, b) { const d = +b.dataset.d; upd(id, { day: S.tasks[id].day === d ? null : d }); commit(); },
+  edit(id) { openSheet('edit', id); },
+  focus() { openFocus(); },
+  closeFocus() { closeFocus(); render(); },
+  focusDone(id) { toggleDone(id); commit(); confetti(); openFocus(true); },
+  capture() { openSheet('capture'); },
+  pickMit() { openSheet('pickMit'); },
+  pickRock() { openSheet('pickRock'); },
+  goal() { openSheet('goal'); },
+  settings() { openSheet('settings'); },
+  closeSheet() { closeSheet(); },
+  pickMitRow(id) { toggleMit(id); commit(); drawSheet(); },
+  pickRockRow(id) { toggleRock(id); commit(); drawSheet(); },
+  seg(id, b) {
+    document.querySelectorAll('#eS button').forEach(x => x.classList.toggle('on', x === b));
+    $('#eWwrap').hidden = b.dataset.v !== 'wait';
+  },
+  eMit(id, b) { b.classList.toggle('on'); },
+  eRock(id, b) { b.classList.toggle('on'); },
+  saveEdit() {
+    const id = sheetArg, t = S.tasks[id], td = dayKey(), wk = weekKey();
+    const title = $('#eT').value.trim(); if (!title) { toast('Úkol potřebuje název'); return; }
+    const st = document.querySelector('#eS button.on')?.dataset.v || 'list';
+    const patch = { t: title, note: $('#eN').value.trim(), who: st === 'wait' ? $('#eW').value.trim() : '' };
+    if (t.st !== 'done') patch.st = st; else patch.prev = st;
+    const wantMit = document.querySelector('[data-act="eMit"]').classList.contains('on');
+    const wantRock = document.querySelector('[data-act="eRock"]').classList.contains('on');
+    upd(id, patch);
+    if (wantMit !== (t.mit === td)) toggleMit(id);
+    if (wantRock !== (t.rock === wk)) toggleRock(id);
+    closeSheet(); commit();
+  },
+  delEdit() { const id = sheetArg; upd(id, { del: true }); closeSheet(); commit(); toast('Smazáno', () => { upd(id, { del: false }); commit(); }); },
+  signIn() { signIn(); },
+  signOut() { fb.auth.signOut(); closeSheet(); toast('Odhlášeno. Úkoly zůstávají v tomto zařízení.'); },
+  syncNow() { push(); },
+  export() {
+    const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kameny-zaloha-' + dayKey() + '.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  },
+  import() { $('#importFile').click(); },
+  async reload() {
+    try { const regs = await navigator.serviceWorker?.getRegistrations(); for (const r of regs || []) await r.unregister();
+          for (const k of await caches.keys()) await caches.delete(k); } catch (e) {}
+    location.reload();
+  }
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const fn = ACT[b.dataset.act]; if (fn) { e.preventDefault(); fn(b.dataset.id, b, e); }
+});
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  const kind = e.target.dataset.form;
+  if (kind === 'inbox' || kind === 'list') {
+    const inp = e.target.querySelector('input'), v = inp.value.trim(); if (!v) return;
+    addTask(v, { st: kind }); commit(); const again = $(kind === 'inbox' ? '#cap' : '#capList'); if (again) again.focus();
+  }
+  if (kind === 'capture') {
+    const v = $('#capT').value.trim(); if (!v) return;
+    addTask(v); commit(); $('#capT').value = ''; $('#capT').focus(); toast('Uloženo do inboxu');
+  }
+  if (kind === 'newMit') {
+    const v = $('#nm').value.trim(); if (!v) return;
+    if (todayMits().length >= MAX_MIT) { toast('Nejvýš 3 NÚ na den. Zbytek počká.'); return; }
+    addTask(v, { st: 'list', mit: dayKey(), mo: Date.now() }); commit(); drawSheet('#nm');
+  }
+  if (kind === 'newRock') {
+    const v = $('#nr').value.trim(); if (!v) return;
+    addTask(v, { st: 'list', rock: weekKey() }); commit(); drawSheet('#nr');
+  }
+  if (kind === 'deleg') {
+    upd(sheetArg, { st: 'wait', who: $('#dw').value.trim() }); closeSheet(); commit(); toast('Přesunuto do „Čeká na ostatní“');
+  }
+  if (kind === 'goal') {
+    S.goal = { t: $('#gt').value.trim(), u: Date.now() }; closeSheet(); commit();
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && e.target.id === 'capT') { e.preventDefault(); e.target.form.requestSubmit(); }
+  if (e.key === 'Escape') { if ($('#focus').classList.contains('open')) ACT.closeFocus(); else closeSheet(); }
+});
+$('#importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const data = JSON.parse(await f.text()); if (!data.tasks) throw 0; S = mergeState(S, data); commit(); closeSheet(); toast('Záloha nahrána'); }
+  catch (err) { toast('Soubor není záloha z Kamenů'); }
+  e.target.value = '';
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+
+/* ---------- synchronizace (Firebase) ---------- */
+let fb = null, user = null, unsub = null, syncT = null, syncState = 'local';
+function sig(s) { return Object.values(s.tasks || {}).map(t => t.id + ':' + t.u).sort().join('|') + '#' + (s.goal?.u || 0); }
+function prune(s) {
+  const n = Date.now();
+  for (const [id, t] of Object.entries(s.tasks)) {
+    if (t.del && n - t.u > 30 * DAY) delete s.tasks[id];
+    else if (t.st === 'done' && t.done && n - t.done > 180 * DAY) delete s.tasks[id];
+  }
+  return s;
+}
+function mergeState(a, b) {
+  if (!b || !b.tasks) return prune({ tasks: { ...a.tasks }, goal: a.goal });
+  const tasks = { ...a.tasks };
+  for (const [id, t] of Object.entries(b.tasks)) if (!tasks[id] || (t.u || 0) > (tasks[id].u || 0)) tasks[id] = t;
+  const goal = (b.goal?.u || 0) > (a.goal?.u || 0) ? b.goal : (a.goal || { t: '', u: 0 });
+  return prune({ tasks, goal });
+}
+function syncText() {
+  if (!FIREBASE_CONFIG) return 'Není nastavená. Úkoly jsou jen v tomto zařízení. Postup je v souboru README.';
+  return ({
+    signedout: 'Přihlas se Google účtem a úkoly uvidíš v mobilu i na počítači.',
+    busy: navigator.onLine ? 'Synchronizuji…' : 'Jsi offline. Změny se odešlou po připojení.',
+    ok: 'Synchronizováno' + (user ? ' (' + (user.email || '') + ')' : ''),
+    error: 'Synchronizace selhala. Zkontroluj připojení a pravidla ve Firestore.',
+    offline: 'Knihovnu pro synchronizaci se nepodařilo načíst. Úkoly se ukládají v zařízení.',
+    local: 'Úkoly jsou jen v tomto zařízení.'
+  })[syncState] || '';
+}
+function setSync(s) {
+  syncState = s;
+  $('#syncDot').className = 'dot ' + ({ ok: 'ok', error: 'err', busy: 'busy' }[s] || '');
+  const l = $('#syncLabel'); if (l) l.textContent = syncText();
+}
+function push() {
+  if (!user) return;
+  setSync('busy');
+  fb.db.collection('users').doc(user.uid)
+    .set({ state: JSON.stringify(S), updated: firebase.firestore.FieldValue.serverTimestamp() })
+    .then(() => setSync('ok')).catch(e => { console.error(e); setSync('error'); });
+}
+function scheduleSync() { if (!user) return; clearTimeout(syncT); syncT = setTimeout(push, 700); }
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+async function initSync() {
+  if (!FIREBASE_CONFIG) { setSync('local'); return; }
+  const base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  try {
+    await loadScript(base + 'firebase-app-compat.js');
+    await Promise.all([loadScript(base + 'firebase-auth-compat.js'), loadScript(base + 'firebase-firestore-compat.js')]);
+  } catch (e) { setSync('offline'); return; }
+  firebase.initializeApp(FIREBASE_CONFIG);
+  fb = { auth: firebase.auth(), db: firebase.firestore() };
+  fb.auth.getRedirectResult().catch(e => toast('Přihlášení se nepovedlo: ' + e.code));
+  fb.auth.onAuthStateChanged(u => {
+    user = u;
+    if (unsub) { unsub(); unsub = null; }
+    if (!u) { setSync('signedout'); if (sheetKind === 'settings') drawSheet(); return; }
+    setSync('busy');
+    unsub = fb.db.collection('users').doc(u.uid).onSnapshot(snap => {
+      if (snap.metadata.hasPendingWrites) return;
+      let remote = null;
+      try { remote = snap.exists ? JSON.parse(snap.data().state) : null; } catch (e) {}
+      const merged = mergeState(S, remote);
+      if (sig(merged) !== sig(S)) { S = merged; saveLocal(); render(); if (sheetKind === 'pickMit' || sheetKind === 'pickRock') drawSheet(); }
+      if (!remote || sig(merged) !== sig(remote)) push(); else setSync('ok');
+    }, err => { console.error(err); setSync('error'); });
+    if (sheetKind === 'settings') drawSheet();
+  });
+  window.addEventListener('online', () => { if (user) push(); });
+}
+async function signIn() {
+  const p = new firebase.auth.GoogleAuthProvider();
+  try { await fb.auth.signInWithPopup(p); closeSheet(); toast('Přihlášeno. Úkoly se synchronizují.'); }
+  catch (e) {
+    if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/cancelled-popup-request'].includes(e.code)) fb.auth.signInWithRedirect(p);
+    else if (e.code !== 'auth/popup-closed-by-user') toast('Přihlášení se nepovedlo: ' + e.code);
+  }
+}
+
+/* ---------- start ---------- */
+render();
+initSync();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>

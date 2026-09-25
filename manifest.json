@@ -1,0 +1,17 @@
+{
+  "name": "Kameny – úkoly",
+  "short_name": "Kameny",
+  "description": "Úkoly podle Zen a hotovo: inbox, velké kameny, nejdůležitější úkoly dne.",
+  "lang": "cs",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#E8EBE6",
+  "theme_color": "#1E2A2F",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
