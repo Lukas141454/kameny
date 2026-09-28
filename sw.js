@@ -1,5 +1,5 @@
 // Kameny – service worker (offline režim)
-const CACHE = 'kameny-v1.0.0';
+const CACHE = 'kameny-v1.4.0';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 const CDN = ['www.gstatic.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 

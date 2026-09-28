@@ -43,6 +43,7 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke
 header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
 h1{font-family:var(--display);font-weight:800;font-size:2.5rem;line-height:1;letter-spacing:-.025em}
 .sub{color:var(--muted);margin-top:6px;font-size:.95rem}
+.hbtns{display:flex;gap:2px;margin-right:-8px}
 .iconbtn{position:relative;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--muted);flex:none}
 .iconbtn:active{background:var(--line)}
 .dot{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--stone);border:2px solid var(--bg)}
@@ -77,6 +78,18 @@ h2 small{font-family:var(--font);font-weight:500;color:var(--muted);font-size:.8
 .row.is-done .t{color:var(--muted)}
 .list{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:2px 14px}
 
+.more{width:36px;height:40px;display:grid;place-items:center;color:var(--muted);border-radius:50%;flex:none;margin-right:-6px}
+.more:active{background:var(--line)}
+.more svg{stroke-width:2.6}
+.lead .more{color:var(--on-pebble);opacity:.7;margin:-8px -10px 0 0}
+.lead-top{display:flex;justify-content:space-between;align-items:center}
+.secthd{display:flex;width:100%;justify-content:space-between;align-items:baseline;margin:30px 0 12px;font-family:var(--display);font-weight:600;font-size:1.2rem}
+.secthd small{font-family:var(--font);font-weight:500;color:var(--muted);font-size:.88rem;display:inline-flex;align-items:center;gap:4px}
+.secthd .chev{display:inline-block;transition:transform .2s}
+.secthd.open .chev{transform:rotate(180deg)}
+.trashlink{display:flex;align-items:center;gap:8px;margin:28px auto 0;color:var(--muted);font-weight:600;font-size:.9rem;padding:8px 14px;border-radius:999px}
+.trashlink svg{width:18px;height:18px}
+.trashlink:active{background:var(--line)}
 .star{width:40px;height:40px;display:grid;place-items:center;color:var(--stone);border-radius:50%;flex:none}
 .star.on{color:var(--ochre)} .star.on svg{fill:var(--ochre)}
 .rock-ico{color:var(--moss);display:grid;place-items:center}
@@ -161,6 +174,34 @@ label.lab{display:block;font-size:.85rem;color:var(--muted);margin:4px 2px 6px}
 .setsec p{margin-bottom:10px}
 .setsec .btns{display:flex;gap:8px;flex-wrap:wrap}
 
+/* Diktování */
+.voice{display:flex;align-items:center;gap:14px;margin:2px 0 12px}
+.mic{width:64px;height:60px;display:grid;place-items:center;flex:none;background:var(--moss);color:var(--on-moss);border-radius:32px 36px 30px 38px / 34px 30px 36px 32px}
+.mic svg{width:28px;height:28px;stroke-width:2.1}
+.mic:active{transform:scale(.95)}
+.mic.on{background:var(--ochre);color:#fff;animation:breathe 1.3s ease-in-out infinite}
+@keyframes breathe{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--ochre) 22%,transparent)}}
+.vstat{color:var(--muted);font-size:.93rem;line-height:1.35}
+.vstat b{color:var(--ink);font-weight:600}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:4px 0;font-weight:500}
+.switch .tr{width:46px;height:28px;border-radius:14px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.switch .tr::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on .tr{background:var(--moss)}
+.switch.on .tr::after{transform:translateX(18px)}
+
+/* O appce */
+.about{max-width:60ch}
+.about .lede{font-family:var(--display);font-size:1.15rem;font-weight:600;line-height:1.3;margin-bottom:6px}
+.about h4{font-family:var(--display);font-weight:600;font-size:1.12rem;margin:24px 0 6px;display:flex;align-items:center;gap:8px}
+.about h4 svg{color:var(--moss)}
+.about p{margin-bottom:10px}
+.about ul{margin:0 0 10px 0;padding-left:0;list-style:none}
+.about li{position:relative;padding-left:18px;margin-bottom:7px}
+.about li::before{content:"";position:absolute;left:2px;top:.6em;width:8px;height:6px;border-radius:50% 45% 55% 40%;background:var(--stone)}
+.about .rhythm li::before{background:var(--ochre)}
+.about .tip{background:var(--ochre-soft);border-radius:18px 24px 20px 26px;padding:14px 16px;margin-top:18px}
+.about .foot{color:var(--muted);font-size:.85rem;margin-top:20px}
+
 /* Režim soustředění */
 .focus{position:fixed;inset:0;z-index:50;background:var(--pebble);color:var(--on-pebble);display:none;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 16px) 26px calc(env(safe-area-inset-bottom,0px) + 28px)}
 .focus.open{display:flex}
@@ -187,10 +228,15 @@ label.lab{display:block;font-size:.85rem;color:var(--muted);margin:4px 2px 6px}
 <div class="app">
   <header class="top">
     <div><h1 id="title">Dnes</h1><p class="sub" id="sub"></p></div>
+    <div class="hbtns">
+    <button class="iconbtn" data-act="about" aria-label="O appce a návod">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>
+    </button>
     <button class="iconbtn" data-act="settings" aria-label="Nastavení a synchronizace">
       <svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
       <span class="dot" id="syncDot"></span>
     </button>
+    </div>
   </header>
   <main id="view"></main>
 </div>
@@ -225,17 +271,21 @@ const FIREBASE_CONFIG = {
 };
 */
 
-const VERSION = '1.0.0';
+const VERSION = '1.4.0';
 const LS_KEY = 'kameny.v1';
 const MAX_MIT = 3, MAX_ROCKS = 6;
 const DAYS = ['Po','Út','St','Čt','Pá','So','Ne'];
 const DAY = 86400000;
+const TRASH_DAYS = 30;
+let laterOpen = localStorage.getItem('kameny.laterOpen') === '1';
 
 const ICON = {
   check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   star:'<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
   rock:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="8" ry="3"/><ellipse cx="12" cy="12.3" rx="5.5" ry="2.6"/><ellipse cx="12" cy="7.2" rx="3" ry="2"/></svg>',
-  x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+  x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12.5a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5L18 7M9 7V4.5A.5.5 0 0 1 9.5 4h5a.5.5 0 0 1 .5.5V7"/></svg>',
+  more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>'
 };
 
 /* ---------- pomocné ---------- */
@@ -272,6 +322,12 @@ function addTask(text, extra = {}) {
   S.tasks[t.id] = t; return t;
 }
 function upd(id, patch) { const t = S.tasks[id]; if (t) Object.assign(t, patch, { u: Date.now() }); }
+function trashItems() {
+  const n = Date.now();
+  return Object.values(S.tasks).filter(t => t.del && !t.purge && n - (t.delAt || t.u) <= TRASH_DAYS * DAY).sort((a,b) => (b.delAt || b.u) - (a.delAt || a.u));
+}
+function trashTask(id) { upd(id, { del: true, delAt: Date.now() }); }
+function restoreTask(id) { upd(id, { del: false, purge: false, delAt: 0 }); }
 function isDoneToday(t) { return t.st === 'done' && t.done && dayKey(new Date(t.done)) === dayKey(); }
 function todayMits() { const td = dayKey(); return alive().filter(t => t.mit === td).sort((a,b) => a.mo - b.mo); }
 
@@ -284,16 +340,17 @@ function toggleMit(id) {
   const t = S.tasks[id], td = dayKey(); if (!t) return;
   if (t.mit === td) { upd(id, { mit: null }); return; }
   if (todayMits().length >= MAX_MIT) { toast('Nejvýš 3 NÚ na den. Zbytek počká.'); return; }
-  upd(id, { mit: td, mo: Date.now(), st: t.st === 'inbox' ? 'list' : t.st });
+  upd(id, { mit: td, mo: Date.now(), st: (t.st === 'inbox' || t.st === 'later') ? 'list' : t.st });
   if (t.st === 'done') upd(id, { st: 'list', done: 0 });
 }
 function toggleRock(id) {
   const t = S.tasks[id], wk = weekKey(); if (!t) return;
   if (t.rock === wk) { upd(id, { rock: null, day: null }); return; }
-  upd(id, { rock: wk, day: null, st: t.st === 'inbox' ? 'list' : t.st });
+  upd(id, { rock: wk, day: null, st: (t.st === 'inbox' || t.st === 'later') ? 'list' : t.st });
 }
 
 /* ---------- vykreslení ---------- */
+const moreBtn = id => `<button class="more" data-act="edit" data-id="${id}" aria-label="Upravit nebo smazat">${ICON.more}</button>`;
 function render() {
   document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === view));
   const n = alive().filter(t => t.st === 'inbox').length;
@@ -308,11 +365,12 @@ function pebbleRow(t, withRemove = true) {
     <button class="chk ${d ? 'on' : ''}" data-act="done" data-id="${t.id}" aria-label="${d ? 'Vrátit' : 'Hotovo'}">${ICON.check}</button>
     <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
     ${withRemove && !d ? `<button class="star" data-act="mit" data-id="${t.id}" aria-label="Odebrat z NÚ">${ICON.x}</button>` : ''}
+    ${moreBtn(t.id)}
   </div>`;
 }
 function leadPebble(t) {
   return `<div class="pebble lead">
-    <span class="lbl">Teď dělám</span>
+    <div class="lead-top"><span class="lbl">Teď dělám</span>${moreBtn(t.id)}</div>
     <div class="ttl" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
     ${t.note ? `<p class="note">${esc(t.note)}</p>` : ''}
     <div class="lead-acts">
@@ -334,6 +392,7 @@ function listRow(t) {
     <button class="chk ${d ? 'on' : ''}" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
     <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
     ${d ? '' : `<button class="star ${t.mit === td ? 'on' : ''}" data-act="mit" data-id="${t.id}" aria-label="NÚ na dnes">${ICON.star}</button>`}
+    ${moreBtn(t.id)}
   </div>`;
 }
 
@@ -360,7 +419,7 @@ function vToday() {
   if (rocksToday.length) {
     h += `<h2>Velké kameny na dnes</h2><div class="list">` + rocksToday.map(t => `<div class="row">
       <span class="rock-ico">${ICON.rock}</span><div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
-      <button class="btn small" data-act="mit" data-id="${t.id}">Na dnes</button></div>`).join('') + `</div>`;
+      <button class="btn small" data-act="mit" data-id="${t.id}">Na dnes</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
   }
   if (!all.some(t => t.rock === wk)) {
     h += `<button class="nudge" data-act="go" data-v="week">${ICON.rock}Nový týden: vyber si velké kameny</button>`;
@@ -386,6 +445,7 @@ function vInbox() {
         <button class="act go" data-act="tolist" data-id="${t.id}">Do úkolů</button>
         <button class="act" data-act="rock" data-id="${t.id}">Velký kámen</button>
         <button class="act" data-act="now" data-id="${t.id}">Hotovo hned</button>
+        <button class="act" data-act="later" data-id="${t.id}">Později</button>
         <button class="act" data-act="deleg" data-id="${t.id}">Delegovat</button>
         <button class="act danger" data-act="del" data-id="${t.id}">Smazat</button>
       </div></div>`).join('');
@@ -405,8 +465,20 @@ function vTasks() {
     h += `<h2>Čeká na ostatní <small>${wait.length}</small></h2><div class="list">` + wait.map(t => `<div class="row">
       <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
       <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
-      <button class="btn small ghost" data-act="tolist" data-id="${t.id}">Vzít zpět</button></div>`).join('') + `</div>`;
+      <button class="btn small ghost" data-act="tolist" data-id="${t.id}">Vzít zpět</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
   }
+  const later = all.filter(t => t.st === 'later').sort((a,b) => a.c - b.c);
+  if (later.length) {
+    h += `<button class="secthd ${laterOpen ? 'open' : ''}" id="laterSec" data-act="toggleLater" aria-expanded="${laterOpen}">Později <small>${later.length} <span class="chev">▾</span></small></button>`;
+    if (laterOpen) {
+      h += `<p class="hint" style="margin:-4px 2px 10px">Věci na někdy. Při týdenní revizi je projdi, jestli některá nedozrála.</p><div class="list">` + later.map(t => `<div class="row">
+        <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
+        <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
+        <button class="btn small ghost" data-act="tolist" data-id="${t.id}">Do úkolů</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
+    }
+  }
+  const trashN = trashItems().length;
+  if (trashN) h += `<button class="trashlink" data-act="trash">${ICON.trash}Koš (${trashN})</button>`;
   return { title: 'Úkoly', sub: `${list.length} ${pl(list.length,'úkol','úkoly','úkolů')} v seznamu`, html: h };
 }
 
@@ -426,17 +498,19 @@ function vWeek() {
     const d = t.st === 'done';
     return `<div class="pebble rockcard ${d ? 'is-done' : ''}">
       <div class="rtop"><button class="chk ${d ? 'on' : ''}" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
-      <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div></div>
+      <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>${moreBtn(t.id)}</div>
       ${d ? '' : `<div class="days">${DAYS.map((n, i) => `<button class="day ${t.day === i ? 'on' : ''} ${i === di ? 'today' : ''}" data-act="day" data-id="${t.id}" data-d="${i}" aria-label="Naplánovat na ${n}">${n}</button>`).join('')}</div>`}
     </div>`;
   }).join('');
   if (openRocks.length > MAX_ROCKS) h += `<p class="hint" style="margin:4px 2px 10px">Víc než 6 kamenů na týden bývá moc. Zkus některé odložit.</p>`;
   h += `<button class="addline" data-act="pickRock">Přidat velký kámen</button>`;
+  const laterN = all.filter(t => t.st === 'later').length;
+  if (laterN) h += `<button class="nudge" data-act="openLater">Projdi i Později (${laterN}), jestli něco nedozrálo</button>`;
 
   if (old.length) {
     h += `<h2>Nedokončené z minulých týdnů <small>${old.length}</small></h2><div class="list">` + old.map(t => `<div class="row">
       <span class="rock-ico">${ICON.rock}</span><div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
-      <button class="btn small" data-act="rock" data-id="${t.id}">Na tento týden</button></div>`).join('') + `</div>`;
+      <button class="btn small" data-act="rock" data-id="${t.id}">Na tento týden</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
   }
 
   const doneWeek = all.filter(t => t.st === 'done' && t.done >= ws.getTime()).sort((a,b) => b.done - a.done);
@@ -450,19 +524,69 @@ function vWeek() {
   return { title: 'Týden', sub: `${wi.num}. týden, ${fmt(ws)} – ${fmt(we)}`, html: h };
 }
 
+/* ---------- diktování ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, recOn = false, voiceAuto = localStorage.getItem('kameny.voiceAuto') === '1';
+const MIC_ICON = '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>';
+function setVoiceUI(state, msg) {
+  const b = $('#micBtn'), s = $('#vstat'); if (!b || !s) return;
+  b.classList.toggle('on', state === 'on');
+  b.setAttribute('aria-label', state === 'on' ? 'Zastavit diktování' : 'Nadiktovat úkol');
+  s.innerHTML = msg || (state === 'on' ? '<b>Poslouchám…</b><br>Mluv česky, pak klepni znovu nebo počkej.' : 'Klepni a nadiktuj úkol česky.');
+}
+function startDictation() {
+  if (!SR) { toast('Tenhle prohlížeč diktování neumí. Zkus Chrome.'); return; }
+  if (recOn) { rec.stop(); return; }
+  const ta = $('#capT'); if (!ta) return;
+  const base = ta.value.trim();
+  rec = new SR();
+  rec.lang = 'cs-CZ'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  let finalText = '';
+  rec.onstart = () => { recOn = true; setVoiceUI('on'); };
+  rec.onresult = e => {
+    let interim = ''; finalText = '';
+    for (let i = 0; i < e.results.length; i++) {
+      const r = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalText += r; else interim += r;
+    }
+    let txt = (finalText + interim).trim();
+    if (txt && !base) txt = cap(txt);
+    ta.value = base ? base + ' ' + txt : txt;
+  };
+  rec.onerror = e => {
+    const m = {
+      'not-allowed': 'Mikrofon není povolený. Povol ho v nastavení prohlížeče pro tuhle stránku.',
+      'service-not-allowed': 'Mikrofon není povolený. Povol ho v nastavení prohlížeče pro tuhle stránku.',
+      'no-speech': 'Nic jsem neslyšel. Zkus to znovu.',
+      'network': 'Diktování potřebuje internet.',
+      'audio-capture': 'Nenašel jsem mikrofon.'
+    }[e.error];
+    if (m) setVoiceUI('off', m);
+  };
+  rec.onend = () => {
+    recOn = false;
+    const s = $('#vstat');
+    if (s && s.textContent.startsWith('Poslouchám')) setVoiceUI('off', ta.value.trim() ? 'Zkontroluj text a ulož. Klepnutím na mikrofon můžeš ještě doplnit.' : null);
+  };
+  try { rec.start(); } catch (err) { recOn = false; setVoiceUI('off'); }
+}
+function stopDictation() { if (rec && recOn) { try { rec.abort(); } catch (e) {} } recOn = false; }
+
 /* ---------- spodní panel ---------- */
 let sheetKind = null, sheetArg = null;
 function openSheet(kind, arg) { sheetKind = kind; sheetArg = arg; drawSheet(); $('#sheet').classList.add('open'); $('#scrim').classList.add('open'); }
-function closeSheet() { sheetKind = null; $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
+function closeSheet() { stopDictation(); sheetKind = null; $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
 function drawSheet(focusSel) {
   const el = $('#sheet'); let h = '<div class="grab"></div>';
   const td = dayKey(), wk = weekKey();
 
   if (sheetKind === 'capture') {
     h += `<h3>Zapsat do inboxu</h3>
-      <form data-form="capture"><textarea class="field" id="capT" placeholder="Úkol, nápad, cokoli. Roztřídíš to později." enterkeyhint="send"></textarea>
+      ${SR ? `<div class="voice"><button type="button" class="mic" id="micBtn" data-act="mic" aria-label="Nadiktovat úkol">${MIC_ICON}</button><p class="vstat" id="vstat">Klepni a nadiktuj úkol česky.</p></div>` : ''}
+      <form data-form="capture"><textarea class="field" id="capT" placeholder="${SR ? 'Nebo napiš: úkol, nápad, cokoli.' : 'Úkol, nápad, cokoli. Roztřídíš to později.'}" enterkeyhint="send"></textarea>
       <div class="sheet-acts"><button type="button" class="btn ghost" data-act="closeSheet">Zavřít</button><button class="btn" type="submit">Uložit do inboxu</button></div></form>`;
-    focusSel = focusSel || '#capT';
+    if (SR && voiceAuto && !focusSel) setTimeout(startDictation, 150);
+    else focusSel = focusSel || '#capT';
   }
   if (sheetKind === 'edit') {
     const t = S.tasks[sheetArg]; if (!t) return closeSheet();
@@ -471,7 +595,7 @@ function drawSheet(focusSel) {
       <label class="lab" for="eT">Název</label><input class="field" id="eT" value="${esc(t.t)}">
       <label class="lab" for="eN">Poznámka</label><textarea class="field" id="eN">${esc(t.note)}</textarea>
       <label class="lab">Kam patří</label>
-      <div class="seg" id="eS">${[['inbox','Inbox'],['list','Úkoly'],['wait','Čeká na']].map(([k,n]) => `<button data-act="seg" data-v="${k}" class="${st === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+      <div class="seg" id="eS">${[['inbox','Inbox'],['list','Úkoly'],['later','Později'],['wait','Čeká na']].map(([k,n]) => `<button data-act="seg" data-v="${k}" class="${st === k ? 'on' : ''}">${n}</button>`).join('')}</div>
       <div id="eWwrap" ${st === 'wait' ? '' : 'hidden'}><label class="lab" for="eW">Na koho čekáš</label><input class="field" id="eW" value="${esc(t.who)}"></div>
       <div class="seg">
         <button data-act="eMit" class="${t.mit === td ? 'on' : ''}">NÚ na dnes</button>
@@ -510,11 +634,80 @@ function drawSheet(focusSel) {
       <div class="sheet-acts"><button type="button" class="btn ghost" data-act="closeSheet">Zrušit</button><button class="btn" type="submit">Uložit</button></div></form>`;
     focusSel = focusSel || '#gt';
   }
+  if (sheetKind === 'trash') {
+    const items = trashItems(), n = Date.now();
+    const ago = t => { const d = Math.floor((n - (t.delAt || t.u)) / DAY); return d === 0 ? 'dnes' : d === 1 ? 'včera' : 'před ' + d + ' dny'; };
+    const left = t => Math.max(1, TRASH_DAYS - Math.floor((n - (t.delAt || t.u)) / DAY));
+    h += `<h3>Koš</h3><p class="hint" style="margin-bottom:8px">Smazané úkoly tu zůstanou ${TRASH_DAYS} dní, pak zmizí samy.</p>`;
+    h += items.length ? items.map(t => `<div class="row">
+        <div class="t">${esc(t.t)}<small>Smazáno ${ago(t)}, zmizí za ${left(t)} ${pl(left(t), 'den', 'dny', 'dní')}</small></div>
+        <button class="btn small" data-act="restore" data-id="${t.id}">Obnovit</button>
+        <button class="star" data-act="purge" data-id="${t.id}" aria-label="Smazat natrvalo">${ICON.x}</button></div>`).join('')
+      : `<p class="hint" style="padding:14px 2px">Koš je prázdný.</p>`;
+    h += `<div class="sheet-acts" style="margin-top:16px">${items.length ? '<button class="btn ghost danger" data-act="emptyTrash">Vysypat koš</button>' : '<span></span>'}<button class="btn" data-act="closeSheet">Zavřít</button></div>`;
+  }
+  if (sheetKind === 'about') {
+    h += `<div class="about">
+      <h3>Jak Kameny používat</h3>
+      <p class="lede">Hlava je na přemýšlení, ne na pamatování.</p>
+      <p>Všechno, co tě napadne, hned zapiš do appky a pak už jen v klidu rozhoduj, co s tím. Appka má čtyři části a každá odpovídá jednomu kroku z knihy Zen a hotovo.</p>
+
+      <h4><svg viewBox="0 0 24 24"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>Inbox: sběrný koš</h4>
+      <p>Sem padá všechno, co ti přijde na mysl. Zapíšeš to kdykoli tlačítkem <b>+</b> vpravo dole, napsáním nebo nadiktováním přes mikrofon. Nemusíš přemýšlet, kam věc patří, hlavně ji dostaň z hlavy.</p>
+      <p>Inbox je jen přestupní stanice. Jednou až dvakrát denně ho projdi a u každé položky hned rozhodni:</p>
+      <ul>
+        <li><b>Hotovo hned</b>: zabere to do dvou minut, tak to rovnou udělej.</li>
+        <li><b>Do úkolů</b>: je to na déle, patří to do seznamu.</li>
+        <li><b>Velký kámen</b>: důležitá věc, kterou chceš zvládnout tento týden.</li>
+        <li><b>Později</b>: někdy to udělat chceš, ale určitě ne tento týden.</li>
+        <li><b>Delegovat</b>: udělá to někdo jiný. Úkol se přesune do „Čeká na ostatní“, abys věděl, co připomenout.</li>
+        <li><b>Smazat</b>: po zralé úvaze to nepotřebuješ.</li>
+      </ul>
+      <p>Cíl je prázdný inbox. Číslo u záložky ukazuje, kolik položek čeká na roztřídění.</p>
+
+      <h4><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.5M4 12h.5M4 18h.5"/></svg>Úkoly: seznam všeho k udělání</h4>
+      <p>Tady leží všechno roztříděné. Je to zásobárna, ze které si vybíráš. Nemusíš ji mít celou pod kontrolou, jen víš, kam sáhnout. Hvězdičkou uděláš z úkolu NÚ na dnešek.</p>
+      <p>Dole je sbalený oddíl <b>Později</b> pro věci na někdy, třeba „vymalovat garáž“. V hlavním seznamu tě nerozptylují a při týdenní revizi je projdeš, jestli některá nedozrála. Tlačítkem <b>Do úkolů</b> ji vrátíš zpět.</p>
+
+      <h4>${ICON.rock}Týden: velké kameny</h4>
+      <p>Nejdřív do nádoby velké kameny, pak štěrk a písek. Obráceně by drobnosti zaplnily celý den a na důležité věci by nezbylo místo.</p>
+      <p>Jednou týdně (v neděli večer nebo v pondělí ráno) projdi seznam úkolů a zeptej se: co chci tento týden opravdu zvládnout? Vyber 4 až 6 velkých kamenů a tlačítky Po–Ne je rozlož do dnů, ideálně jeden až dva na den.</p>
+      <p>Nahoře je <b>roční cíl</b>, jedna věc, ke které chceš za rok dojít. Aspoň jeden velký kámen týdně by měl vést k němu.</p>
+      <p>Dole je <b>zpětné zrcátko</b>: co všechno jsi za týden dokončil. Obvykle toho je víc, než máš pocit.</p>
+
+      <h4><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>Dnes: nejdůležitější úkoly (NÚ)</h4>
+      <p>Každé ráno vyber nejvýš 3 NÚ. Appka ti nabídne velké kameny naplánované na dnešek. Víc než tři vybrat nejde, a to schválně: když je důležité všechno, není důležité nic.</p>
+      <p>První NÚ je velký a tmavý nahoře. Tím začínáš, ještě než otevřeš e-mail. Tlačítko <b>Soustředit se</b> otevře obrazovku jen s tímhle jedním úkolem. Dokud není hotový, nic jiného neřešíš. Pak se odměň a pokračuj dalším.</p>
+      <p>Dole se během dne plní <b>Dnes hotovo</b>.</p>
+
+      <h4>Jak to vypadá v praxi</h4>
+      <ul class="rhythm">
+        <li><b>Neděle nebo pondělí (5 minut):</b> Týden, vybrat velké kameny a rozložit je do dnů.</li>
+        <li><b>Každé ráno (2 minuty):</b> Dnes, vybrat NÚ a hned udělat ten první.</li>
+        <li><b>Během dne:</b> všechno nové přes + do inboxu a zpátky k tomu, co děláš.</li>
+        <li><b>Jednou až dvakrát denně:</b> vyprázdnit inbox.</li>
+        <li><b>Večer:</b> mrknout na Dnes hotovo a být rád, co jsi zvládl.</li>
+      </ul>
+      <div class="tip">Nezačínej se vším najednou. První týden používej jen <b>+</b> a <b>Dnes</b> s NÚ. Až ti to přejde do krve, přidej týdenní plánování velkých kamenů.</div>
+
+      <h4>Drobnosti</h4>
+      <ul>
+        <li>Tlačítkem <b>⋯</b> u úkolu (nebo klepnutím na jeho název) ho upravíš, přesuneš jinam nebo smažeš.</li>
+        <li>Když něco omylem odškrtneš nebo smažeš, dole vyskočí tlačítko <b>Vrátit</b>.</li>
+        <li><b>Diktování</b>: v okně + klepni na mikrofon a mluv česky. Text zkontroluj a ulož. V Nastavení můžeš zapnout, aby appka po klepnutí na + poslouchala sama. Diktování potřebuje internet.</li>
+        <li>Smazané úkoly jdou do <b>Koše</b> (dole v Úkolech) a zůstanou tam 30 dní. Odtud je obnovíš.</li>
+        <li>Tečka u ikony nastavení: zelená synchronizováno, oranžová odesílá se nebo offline, červená chyba.</li>
+      </ul>
+      <p class="foot">Kameny ${VERSION}. Podle knihy Zen a hotovo od Lea Babauty.</p>
+      <div class="sheet-acts"><span></span><button class="btn" data-act="closeSheet">Zavřít</button></div>
+    </div>`;
+  }
   if (sheetKind === 'settings') {
     h += `<h3>Nastavení</h3><div class="setsec"><p><b>Synchronizace</b><br><span class="hint" id="syncLabel">${syncText()}</span></p><div class="btns">`;
     if (fb && !user) h += `<button class="btn" data-act="signIn">Přihlásit přes Google</button>`;
     if (fb && user) h += `<button class="btn ghost" data-act="syncNow">Synchronizovat</button><button class="btn ghost" data-act="signOut">Odhlásit</button>`;
     h += `</div></div>
+      ${SR ? `<div class="setsec"><button class="switch ${voiceAuto ? 'on' : ''}" data-act="voiceAuto" role="switch" aria-checked="${voiceAuto}"><span><b>Po klepnutí na + rovnou poslouchat</b><br><span class="hint">Nemusíš mačkat mikrofon, stačí začít mluvit.</span></span><span class="tr"></span></button></div>` : ''}
       <div class="setsec"><p><b>Záloha</b><br><span class="hint">Stáhni si úkoly jako soubor, nebo je nahraj zpět. Nahrání se sloučí s tím, co už máš.</span></p>
       <div class="btns"><button class="btn ghost" data-act="export">Stáhnout zálohu</button><button class="btn ghost" data-act="import">Nahrát zálohu</button></div></div>
       <div class="setsec"><p class="hint">Kameny ${VERSION}. Podle knihy Zen a hotovo od Lea Babauty.</p>
@@ -601,7 +794,7 @@ const ACT = {
     upd(id, { rock: weekKey(), day: null, st: 'list' }); commit(); toast('Přidáno k velkým kamenům týdne');
   },
   deleg(id) { openSheet('deleg', id); },
-  del(id) { upd(id, { del: true }); commit(); toast('Smazáno', () => { upd(id, { del: false }); commit(); }); },
+  del(id) { trashTask(id); commit(); toast('Přesunuto do koše', () => { restoreTask(id); commit(); }); },
   mit(id) { toggleMit(id); commit(); },
   day(id, b) { const d = +b.dataset.d; upd(id, { day: S.tasks[id].day === d ? null : d }); commit(); },
   edit(id) { openSheet('edit', id); },
@@ -613,6 +806,9 @@ const ACT = {
   pickRock() { openSheet('pickRock'); },
   goal() { openSheet('goal'); },
   settings() { openSheet('settings'); },
+  mic() { startDictation(); },
+  voiceAuto() { voiceAuto = !voiceAuto; localStorage.setItem('kameny.voiceAuto', voiceAuto ? '1' : '0'); drawSheet(); },
+  about() { openSheet('about'); $('#sheet').scrollTop = 0; },
   closeSheet() { closeSheet(); },
   pickMitRow(id) { toggleMit(id); commit(); drawSheet(); },
   pickRockRow(id) { toggleRock(id); commit(); drawSheet(); },
@@ -635,7 +831,18 @@ const ACT = {
     if (wantRock !== (t.rock === wk)) toggleRock(id);
     closeSheet(); commit();
   },
-  delEdit() { const id = sheetArg; upd(id, { del: true }); closeSheet(); commit(); toast('Smazáno', () => { upd(id, { del: false }); commit(); }); },
+  delEdit() { const id = sheetArg; trashTask(id); closeSheet(); commit(); toast('Přesunuto do koše', () => { restoreTask(id); commit(); }); },
+  later(id) { upd(id, { st: 'later', who: '' }); commit(); toast('Odloženo do Později'); },
+  toggleLater() { laterOpen = !laterOpen; localStorage.setItem('kameny.laterOpen', laterOpen ? '1' : '0'); render(); },
+  openLater() { laterOpen = true; localStorage.setItem('kameny.laterOpen', '1'); view = 'tasks'; localStorage.setItem('kameny.view', view); render(); const s = $('#laterSec'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+  trash() { openSheet('trash'); },
+  restore(id) { restoreTask(id); commit(); drawSheet(); toast('Obnoveno'); if (!trashItems().length) closeSheet(); },
+  purge(id) { upd(id, { purge: true }); commit(); drawSheet(); if (!trashItems().length) closeSheet(); },
+  emptyTrash() {
+    const items = trashItems(); if (!items.length) return;
+    if (!confirm('Smazat natrvalo ' + items.length + ' ' + pl(items.length, 'úkol', 'úkoly', 'úkolů') + ' z koše?')) return;
+    items.forEach(t => upd(t.id, { purge: true })); commit(); closeSheet(); toast('Koš vysypán');
+  },
   signIn() { signIn(); },
   signOut() { fb.auth.signOut(); closeSheet(); toast('Odhlášeno. Úkoly zůstávají v tomto zařízení.'); },
   syncNow() { push(); },
@@ -664,7 +871,7 @@ document.addEventListener('submit', e => {
   }
   if (kind === 'capture') {
     const v = $('#capT').value.trim(); if (!v) return;
-    addTask(v); commit(); $('#capT').value = ''; $('#capT').focus(); toast('Uloženo do inboxu');
+    stopDictation(); addTask(v); commit(); $('#capT').value = ''; if (SR && voiceAuto) setVoiceUI('off', 'Uloženo. Klepni na mikrofon pro další úkol.'); else $('#capT').focus(); toast('Uloženo do inboxu');
   }
   if (kind === 'newMit') {
     const v = $('#nm').value.trim(); if (!v) return;
@@ -700,7 +907,7 @@ function sig(s) { return Object.values(s.tasks || {}).map(t => t.id + ':' + t.u)
 function prune(s) {
   const n = Date.now();
   for (const [id, t] of Object.entries(s.tasks)) {
-    if (t.del && n - t.u > 30 * DAY) delete s.tasks[id];
+    if (t.del && n - (t.delAt || t.u) > TRASH_DAYS * DAY) delete s.tasks[id];
     else if (t.st === 'done' && t.done && n - t.done > 180 * DAY) delete s.tasks[id];
   }
   return s;
