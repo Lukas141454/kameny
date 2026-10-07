@@ -174,13 +174,35 @@ label.lab{display:block;font-size:.85rem;color:var(--muted);margin:4px 2px 6px}
 .setsec p{margin-bottom:10px}
 .setsec .btns{display:flex;gap:8px;flex-wrap:wrap}
 
+/* Poznámky */
+.notes-add{margin-bottom:8px}
+.nlist{margin:0 0 14px}
+.nitem{display:flex;gap:8px;align-items:flex-start;padding:10px 0 10px 12px;border-left:3px solid var(--line);margin-bottom:6px;background:var(--bg);border-radius:4px 14px 14px 4px}
+.nitem:first-child{border-left-color:var(--ochre)}
+.nitem .nt{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.nitem .nt small{display:block;color:var(--muted);font-size:.78rem;margin-bottom:2px}
+.nitem .star{width:34px;height:34px;margin-top:-4px}
+.ncount{color:var(--moss);font-weight:600}
+
+/* Přesouvání úkolů */
+.list[data-reorder] .row{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.row.dragging{position:relative;z-index:30;background:var(--surface);border-radius:16px;border-bottom-color:transparent;box-shadow:0 10px 26px rgba(0,0,0,.2);transition:none}
+.row.dragging .t{color:var(--ink)}
+.row.lifting{background:var(--moss-soft);border-radius:16px;transition:background .3s}
+body.is-dragging{overscroll-behavior:none}
+body.is-dragging *{cursor:grabbing!important}
+
 /* Diktování */
-.voice{display:flex;align-items:center;gap:14px;margin:2px 0 12px}
-.mic{width:64px;height:60px;display:grid;place-items:center;flex:none;background:var(--moss);color:var(--on-moss);border-radius:32px 36px 30px 38px / 34px 30px 36px 32px}
-.mic svg{width:28px;height:28px;stroke-width:2.1}
+.voice{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 0 14px;text-align:center}
+.mic{width:84px;height:78px;display:grid;place-items:center;flex:none;background:var(--moss);color:var(--on-moss);border-radius:32px 36px 30px 38px / 34px 30px 36px 32px}
+.mic svg{width:34px;height:34px;stroke-width:2.1}
 .mic:active{transform:scale(.95)}
 .mic.on{background:var(--ochre);color:#fff;animation:breathe 1.3s ease-in-out infinite}
 @keyframes breathe{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--ochre) 22%,transparent)}}
+.vstat{max-width:32ch}
+.lang{display:inline-flex;background:var(--bg);border-radius:999px;padding:3px}
+.lang button{padding:4px 12px;border-radius:999px;font-size:.82rem;font-weight:700;color:var(--muted)}
+.lang button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .vstat{color:var(--muted);font-size:.93rem;line-height:1.35}
 .vstat b{color:var(--ink);font-weight:600}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:4px 0;font-weight:500}
@@ -246,7 +268,7 @@ label.lab{display:block;font-size:.85rem;color:var(--muted);margin:4px 2px 6px}
 <nav class="tabs"><div class="in">
   <button data-act="go" data-v="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>Dnes</button>
   <button data-act="go" data-v="inbox"><svg viewBox="0 0 24 24"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>Inbox<span class="badge" id="inboxBadge" hidden></span></button>
-  <button data-act="go" data-v="tasks"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.5M4 12h.5M4 18h.5"/></svg>Úkoly</button>
+  <button data-act="go" data-v="tasks"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.5M4 12h.5M4 18h.5"/></svg>Úkoly<span class="badge" id="tasksBadge" hidden></span></button>
   <button data-act="go" data-v="week"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="8" ry="3"/><ellipse cx="12" cy="12.3" rx="5.5" ry="2.6"/><ellipse cx="12" cy="7.2" rx="3" ry="2"/></svg>Týden</button>
 </div></nav>
 
@@ -271,7 +293,7 @@ const FIREBASE_CONFIG = {
 };
 */
 
-const VERSION = '1.4.0';
+const VERSION = '1.6.1';
 const LS_KEY = 'kameny.v1';
 const MAX_MIT = 3, MAX_ROCKS = 6;
 const DAYS = ['Po','Út','St','Čt','Pá','So','Ne'];
@@ -310,7 +332,17 @@ function load() {
   try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if (s && s.tasks) return s; } catch (e) {}
   return { tasks: {}, goal: { t: '', u: 0 } };
 }
-let S = load();
+function notesOf(t) { return (t.notes || []).slice().sort((a, b) => b.c - a.c); }
+function normalize(s) {
+  for (const t of Object.values(s.tasks || {})) {
+    if (!Array.isArray(t.notes)) t.notes = [];
+    if (t.note && !t.notes.length) t.notes = [{ id: newId(), t: t.note, c: t.c || Date.now() }];
+    t.note = '';
+  }
+  return s;
+}
+const fmtStamp = ms => { const d = new Date(ms); return d.getDate() + '. ' + (d.getMonth() + 1) + '. ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); };
+let S = normalize(load());
 let view = localStorage.getItem('kameny.view') || 'today';
 function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
 function commit() { saveLocal(); scheduleSync(); render(); }
@@ -318,10 +350,19 @@ const alive = () => Object.values(S.tasks).filter(t => !t.del);
 
 function addTask(text, extra = {}) {
   const n = Date.now();
-  const t = { id: newId(), t: text.trim(), note: '', st: 'inbox', who: '', rock: null, day: null, mit: null, mo: 0, c: n, u: n, done: 0, prev: null, ...extra };
+  const t = { id: newId(), t: text.trim(), note: '', notes: [], st: 'inbox', who: '', rock: null, day: null, mit: null, mo: 0, c: n, u: n, done: 0, prev: null, ...extra };
   S.tasks[t.id] = t; return t;
 }
-function upd(id, patch) { const t = S.tasks[id]; if (t) Object.assign(t, patch, { u: Date.now() }); }
+function upd(id, patch) {
+  const t = S.tasks[id]; if (!t) return;
+  const n = Date.now();
+  // Úkol přesunutý do seznamu (z inboxu, Později…) dostane čas zařazení, aby byl nahoře
+  if (patch.st && patch.st !== t.st && t.st !== 'done' && ['list', 'later', 'wait'].includes(patch.st)) { patch.at = n; patch.o = null; }
+  Object.assign(t, patch, { u: n });
+}
+// Pořadí v seznamu: ručně posunuté úkoly mají vlastní klíč "o", jinak rozhoduje čas zařazení (nejnovější nahoře)
+const sortKey = t => t.o ?? (t.at || t.c);
+const newest = (a, b) => sortKey(b) - sortKey(a);
 function trashItems() {
   const n = Date.now();
   return Object.values(S.tasks).filter(t => t.del && !t.purge && n - (t.delAt || t.u) <= TRASH_DAYS * DAY).sort((a,b) => (b.delAt || b.u) - (a.delAt || a.u));
@@ -355,6 +396,9 @@ function render() {
   document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === view));
   const n = alive().filter(t => t.st === 'inbox').length;
   const badge = $('#inboxBadge'); badge.textContent = n; badge.hidden = !n;
+  // Úkoly: seznam + Čeká na ostatní, bez Později
+  const nt = alive().filter(t => t.st === 'list' || t.st === 'wait').length;
+  const tb = $('#tasksBadge'); tb.textContent = nt > 99 ? '99+' : nt; tb.hidden = !nt;
   const V = ({ today: vToday, inbox: vInbox, tasks: vTasks, week: vWeek }[view] || vToday)();
   $('#title').textContent = V.title; $('#sub').textContent = V.sub; $('#view').innerHTML = V.html;
 }
@@ -372,7 +416,7 @@ function leadPebble(t) {
   return `<div class="pebble lead">
     <div class="lead-top"><span class="lbl">Teď dělám</span>${moreBtn(t.id)}</div>
     <div class="ttl" data-act="edit" data-id="${t.id}">${esc(t.t)}</div>
-    ${t.note ? `<p class="note">${esc(t.note)}</p>` : ''}
+    ${notesOf(t).length ? `<p class="note">${esc(notesOf(t)[0].t)}</p>` : ''}
     <div class="lead-acts">
       <button class="btn ochre" data-act="focus">Soustředit se</button>
       <button class="btn inv" data-act="done" data-id="${t.id}">Hotovo</button>
@@ -383,12 +427,13 @@ function metaLine(t) {
   const bits = [];
   if (t.rock === weekKey()) bits.push(`<span class="tag">${ICON.rock}Velký kámen${t.day != null ? ', ' + DAYS[t.day] : ''}</span>`);
   if (t.st === 'wait' && t.who) bits.push('Čeká na: ' + esc(t.who));
-  if (t.note) bits.push(esc(t.note.split('\n')[0].slice(0, 70)));
+  const ns = notesOf(t);
+  if (ns.length) bits.push(esc(ns[0].t.split('\n')[0].slice(0, 70)) + (ns.length > 1 ? ` <span class="ncount">+${ns.length - 1}</span>` : ''));
   return bits.length ? `<small>${bits.join(' — ')}</small>` : '';
 }
 function listRow(t) {
   const td = dayKey(), d = t.st === 'done';
-  return `<div class="row ${d ? 'is-done' : ''}">
+  return `<div class="row ${d ? 'is-done' : ''}" data-id="${t.id}">
     <button class="chk ${d ? 'on' : ''}" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
     <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
     ${d ? '' : `<button class="star ${t.mit === td ? 'on' : ''}" data-act="mit" data-id="${t.id}" aria-label="NÚ na dnes">${ICON.star}</button>`}
@@ -455,23 +500,23 @@ function vInbox() {
 
 function vTasks() {
   const all = alive(), wk = weekKey();
-  const list = all.filter(t => t.st === 'list').sort((a,b) => ((b.rock === wk) - (a.rock === wk)) || a.c - b.c);
-  const wait = all.filter(t => t.st === 'wait').sort((a,b) => a.c - b.c);
+  const list = all.filter(t => t.st === 'list').sort(newest);
+  const wait = all.filter(t => t.st === 'wait').sort(newest);
   let h = `<form class="capture" data-form="list"><input id="capList" placeholder="Nový úkol" autocomplete="off" enterkeyhint="send" aria-label="Nový úkol"><button class="btn small" type="submit">Přidat</button></form>`;
-  h += `<p class="hint pad">Hvězdičkou uděláš z úkolu NÚ na dnešek.</p>`;
-  h += list.length ? `<div class="list">${list.map(listRow).join('')}</div>`
+  h += `<p class="hint pad">Hvězdičkou uděláš z úkolu NÚ na dnešek. Podržením úkol chytíš a přesuneš, kam chceš.</p>`;
+  h += list.length ? `<div class="list" data-reorder>${list.map(listRow).join('')}</div>`
                    : `<div class="empty"><p class="big">Žádné úkoly.</p><p class="hint">Přidej je sem, nebo je roztřiď z inboxu.</p></div>`;
   if (wait.length) {
-    h += `<h2>Čeká na ostatní <small>${wait.length}</small></h2><div class="list">` + wait.map(t => `<div class="row">
+    h += `<h2>Čeká na ostatní <small>${wait.length}</small></h2><div class="list" data-reorder>` + wait.map(t => `<div class="row" data-id="${t.id}">
       <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
       <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
       <button class="btn small ghost" data-act="tolist" data-id="${t.id}">Vzít zpět</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
   }
-  const later = all.filter(t => t.st === 'later').sort((a,b) => a.c - b.c);
+  const later = all.filter(t => t.st === 'later').sort(newest);
   if (later.length) {
     h += `<button class="secthd ${laterOpen ? 'open' : ''}" id="laterSec" data-act="toggleLater" aria-expanded="${laterOpen}">Později <small>${later.length} <span class="chev">▾</span></small></button>`;
     if (laterOpen) {
-      h += `<p class="hint" style="margin:-4px 2px 10px">Věci na někdy. Při týdenní revizi je projdi, jestli některá nedozrála.</p><div class="list">` + later.map(t => `<div class="row">
+      h += `<p class="hint" style="margin:-4px 2px 10px">Věci na někdy. Při týdenní revizi je projdi, jestli některá nedozrála.</p><div class="list" data-reorder>` + later.map(t => `<div class="row" data-id="${t.id}">
         <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
         <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
         <button class="btn small ghost" data-act="tolist" data-id="${t.id}">Do úkolů</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
@@ -527,12 +572,14 @@ function vWeek() {
 /* ---------- diktování ---------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, recOn = false, voiceAuto = localStorage.getItem('kameny.voiceAuto') === '1';
+let dictLang = localStorage.getItem('kameny.dictLang') || 'cs-CZ';
+const langName = () => dictLang === 'en-US' ? 'anglicky' : 'česky';
 const MIC_ICON = '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>';
 function setVoiceUI(state, msg) {
   const b = $('#micBtn'), s = $('#vstat'); if (!b || !s) return;
   b.classList.toggle('on', state === 'on');
   b.setAttribute('aria-label', state === 'on' ? 'Zastavit diktování' : 'Nadiktovat úkol');
-  s.innerHTML = msg || (state === 'on' ? '<b>Poslouchám…</b><br>Mluv česky, pak klepni znovu nebo počkej.' : 'Klepni a nadiktuj úkol česky.');
+  s.innerHTML = msg || (state === 'on' ? '<b>Poslouchám…</b><br>Mluv ' + langName() + ', pak klepni znovu nebo počkej.' : 'Klepni a nadiktuj úkol ' + langName() + '.');
 }
 function startDictation() {
   if (!SR) { toast('Tenhle prohlížeč diktování neumí. Zkus Chrome.'); return; }
@@ -540,7 +587,7 @@ function startDictation() {
   const ta = $('#capT'); if (!ta) return;
   const base = ta.value.trim();
   rec = new SR();
-  rec.lang = 'cs-CZ'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  rec.lang = dictLang; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
   let finalText = '';
   rec.onstart = () => { recOn = true; setVoiceUI('on'); };
   rec.onresult = e => {
@@ -582,18 +629,20 @@ function drawSheet(focusSel) {
 
   if (sheetKind === 'capture') {
     h += `<h3>Zapsat do inboxu</h3>
-      ${SR ? `<div class="voice"><button type="button" class="mic" id="micBtn" data-act="mic" aria-label="Nadiktovat úkol">${MIC_ICON}</button><p class="vstat" id="vstat">Klepni a nadiktuj úkol česky.</p></div>` : ''}
+      ${SR ? `<div class="voice"><div class="lang" role="group" aria-label="Jazyk diktování"><button type="button" data-act="dictLang" data-v="cs-CZ" class="${dictLang === 'cs-CZ' ? 'on' : ''}">CZ</button><button type="button" data-act="dictLang" data-v="en-US" class="${dictLang === 'en-US' ? 'on' : ''}">EN</button></div><button type="button" class="mic" id="micBtn" data-act="mic" aria-label="Nadiktovat úkol">${MIC_ICON}</button><p class="vstat" id="vstat">Klepni a nadiktuj úkol ${langName()}.</p></div>` : ''}
       <form data-form="capture"><textarea class="field" id="capT" placeholder="${SR ? 'Nebo napiš: úkol, nápad, cokoli.' : 'Úkol, nápad, cokoli. Roztřídíš to později.'}" enterkeyhint="send"></textarea>
       <div class="sheet-acts"><button type="button" class="btn ghost" data-act="closeSheet">Zavřít</button><button class="btn" type="submit">Uložit do inboxu</button></div></form>`;
     if (SR && voiceAuto && !focusSel) setTimeout(startDictation, 150);
-    else focusSel = focusSel || '#capT';
+    else if (!SR) focusSel = focusSel || '#capT';
   }
   if (sheetKind === 'edit') {
     const t = S.tasks[sheetArg]; if (!t) return closeSheet();
     const st = t.st === 'done' ? (t.prev || 'list') : t.st;
     h += `<h3>Upravit úkol</h3>
       <label class="lab" for="eT">Název</label><input class="field" id="eT" value="${esc(t.t)}">
-      <label class="lab" for="eN">Poznámka</label><textarea class="field" id="eN">${esc(t.note)}</textarea>
+      <label class="lab" for="nIn">Poznámky <span class="hint">(nejnovější nahoře)</span></label>
+      <form class="capture notes-add" data-form="note"><input id="nIn" placeholder="Přidat poznámku" autocomplete="off" enterkeyhint="send"><button class="btn small" type="submit">Přidat</button></form>
+      <div class="nlist" id="nList">${notesHtml(t)}</div>
       <label class="lab">Kam patří</label>
       <div class="seg" id="eS">${[['inbox','Inbox'],['list','Úkoly'],['later','Později'],['wait','Čeká na']].map(([k,n]) => `<button data-act="seg" data-v="${k}" class="${st === k ? 'on' : ''}">${n}</button>`).join('')}</div>
       <div id="eWwrap" ${st === 'wait' ? '' : 'hidden'}><label class="lab" for="eW">Na koho čekáš</label><input class="field" id="eW" value="${esc(t.who)}"></div>
@@ -693,8 +742,10 @@ function drawSheet(focusSel) {
       <h4>Drobnosti</h4>
       <ul>
         <li>Tlačítkem <b>⋯</b> u úkolu (nebo klepnutím na jeho název) ho upravíš, přesuneš jinam nebo smažeš.</li>
+        <li><b>Pořadí</b>: nové úkoly jsou nahoře. Když úkol v Úkolech <b>podržíš</b>, zvedne se a můžeš ho přetáhnout, kam chceš.</li>
+        <li><b>Poznámky</b>: v úpravě úkolu můžeš přidávat poznámky. Nejnovější je vždy nahoře a vidíš u ní datum a čas.</li>
         <li>Když něco omylem odškrtneš nebo smažeš, dole vyskočí tlačítko <b>Vrátit</b>.</li>
-        <li><b>Diktování</b>: v okně + klepni na mikrofon a mluv česky. Text zkontroluj a ulož. V Nastavení můžeš zapnout, aby appka po klepnutí na + poslouchala sama. Diktování potřebuje internet.</li>
+        <li><b>Diktování</b>: v okně + klepni na mikrofon a mluv. Přepínačem <b>CZ / EN</b> zvolíš jazyk, appka si ho pamatuje. Běžná anglická slova zvládne i čeština, celé anglické věty diktuj s EN. Text zkontroluj a ulož. V Nastavení můžeš zapnout, aby appka po klepnutí na + poslouchala sama. Diktování potřebuje internet.</li>
         <li>Smazané úkoly jdou do <b>Koše</b> (dole v Úkolech) a zůstanou tam 30 dní. Odtud je obnovíš.</li>
         <li>Tečka u ikony nastavení: zelená synchronizováno, oranžová odesílá se nebo offline, červená chyba.</li>
       </ul>
@@ -717,6 +768,12 @@ function drawSheet(focusSel) {
   if (focusSel) setTimeout(() => { const f = $(focusSel); if (f) f.focus(); }, 60);
 }
 
+function notesHtml(t) {
+  return notesOf(t).map(n => `<div class="nitem"><div class="nt"><small>${fmtStamp(n.c)}</small>${esc(n.t)}</div>
+    <button class="star" data-act="delNote" data-id="${n.id}" aria-label="Smazat poznámku">${ICON.x}</button></div>`).join('');
+}
+function refreshNotes() { const el = $('#nList'), t = S.tasks[sheetArg]; if (el && t) el.innerHTML = notesHtml(t); }
+
 /* ---------- režim soustředění ---------- */
 let focusTimer = null, focusStart = 0, wakeLock = null;
 function openFocus(after) {
@@ -733,7 +790,7 @@ function openFocus(after) {
     focusStart = Date.now();
     f.innerHTML = `<button class="fclose" data-act="closeFocus">Zpět</button>
       <div class="fbody"><p class="flbl">Jen tahle jedna věc</p><h2 class="fttl">${esc(t.t)}</h2>
-      ${t.note ? `<p class="fnote">${esc(t.note)}</p>` : ''}<p class="ftimer" id="ftimer">0:00</p></div>
+      ${notesOf(t).slice(0, 3).map(n => `<p class="fnote">${esc(n.t)}</p>`).join('')}<p class="ftimer" id="ftimer">0:00</p></div>
       <div class="fbtns"><button class="btn ochre" data-act="focusDone" data-id="${t.id}">Hotovo</button></div>`;
     focusTimer = setInterval(() => {
       const s = Math.floor((Date.now() - focusStart) / 1000), el = $('#ftimer');
@@ -807,6 +864,17 @@ const ACT = {
   goal() { openSheet('goal'); },
   settings() { openSheet('settings'); },
   mic() { startDictation(); },
+  delNote(nid) {
+    const t = S.tasks[sheetArg]; if (!t) return;
+    const old = t.notes || [];
+    upd(t.id, { notes: old.filter(n => n.id !== nid) }); saveLocal(); scheduleSync(); render(); refreshNotes();
+    toast('Poznámka smazána', () => { upd(t.id, { notes: old }); saveLocal(); scheduleSync(); render(); refreshNotes(); });
+  },
+  dictLang(id, b) {
+    dictLang = b.dataset.v; localStorage.setItem('kameny.dictLang', dictLang);
+    document.querySelectorAll('.lang button').forEach(x => x.classList.toggle('on', x === b));
+    if (recOn) { stopDictation(); setTimeout(startDictation, 250); } else setVoiceUI('off');
+  },
   voiceAuto() { voiceAuto = !voiceAuto; localStorage.setItem('kameny.voiceAuto', voiceAuto ? '1' : '0'); drawSheet(); },
   about() { openSheet('about'); $('#sheet').scrollTop = 0; },
   closeSheet() { closeSheet(); },
@@ -822,7 +890,7 @@ const ACT = {
     const id = sheetArg, t = S.tasks[id], td = dayKey(), wk = weekKey();
     const title = $('#eT').value.trim(); if (!title) { toast('Úkol potřebuje název'); return; }
     const st = document.querySelector('#eS button.on')?.dataset.v || 'list';
-    const patch = { t: title, note: $('#eN').value.trim(), who: st === 'wait' ? $('#eW').value.trim() : '' };
+    const patch = { t: title, who: st === 'wait' ? $('#eW').value.trim() : '' };
     if (t.st !== 'done') patch.st = st; else patch.prev = st;
     const wantMit = document.querySelector('[data-act="eMit"]').classList.contains('on');
     const wantRock = document.querySelector('[data-act="eRock"]').classList.contains('on');
@@ -858,7 +926,81 @@ const ACT = {
     location.reload();
   }
 };
+/* ---------- přesouvání podržením ---------- */
+const HOLD_MS = 380;
+let drag = null, holdT = null, suppressClick = false;
+function rowKey(el) { const t = S.tasks[el.dataset.id]; return t ? sortKey(t) : 0; }
+document.addEventListener('pointerdown', e => {
+  suppressClick = false;
+  if (e.button !== 0) return;
+  const row = e.target.closest('.list[data-reorder] > .row');
+  if (!row || e.target.closest('.chk, .star, .more, .btn')) return;
+  const sx = e.clientX, sy = e.clientY, pid = e.pointerId;
+  clearTimeout(holdT);
+  row.classList.add('lifting');
+  const cancel = () => { clearTimeout(holdT); row.classList.remove('lifting'); window.removeEventListener('pointermove', pre); window.removeEventListener('pointerup', cancel); window.removeEventListener('pointercancel', cancel); };
+  const pre = ev => { if (ev.pointerId === pid && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8) cancel(); };
+  window.addEventListener('pointermove', pre); window.addEventListener('pointerup', cancel); window.addEventListener('pointercancel', cancel);
+  holdT = setTimeout(() => { cancel(); startDrag(row, sy, pid); }, HOLD_MS);
+});
+function startDrag(row, y, pid) {
+  const r = row.getBoundingClientRect();
+  drag = { row, list: row.parentElement, pid, grab: y - r.top, y, ty: 0, raf: 0 };
+  row.classList.add('dragging'); document.body.classList.add('is-dragging');
+  if (navigator.vibrate) navigator.vibrate(15);
+  window.addEventListener('pointermove', onDragMove, { passive: false });
+  window.addEventListener('pointerup', endDrag); window.addEventListener('pointercancel', endDrag);
+  drag.raf = requestAnimationFrame(autoScroll);
+}
+function placeDrag() {
+  const { row } = drag;
+  row.style.transform = '';
+  const natural = row.getBoundingClientRect().top;
+  // posun v DOM, když prst přejede přes střed souseda
+  let moved = true;
+  while (moved) {
+    moved = false;
+    const prev = row.previousElementSibling, next = row.nextElementSibling;
+    const top = drag.y - drag.grab, bottom = top + row.offsetHeight;
+    if (prev) { const pr = prev.getBoundingClientRect(); if (top < pr.top + pr.height / 2) { row.parentElement.insertBefore(row, prev); moved = true; continue; } }
+    if (next) { const nr = next.getBoundingClientRect(); if (bottom > nr.top + nr.height / 2) { row.parentElement.insertBefore(next, row); moved = true; } }
+  }
+  const nat2 = row.getBoundingClientRect().top;
+  row.style.transform = `translateY(${drag.y - drag.grab - nat2}px)`;
+}
+function onDragMove(e) { if (!drag || e.pointerId !== drag.pid) return; e.preventDefault(); drag.y = e.clientY; placeDrag(); }
+function autoScroll() {
+  if (!drag) return;
+  const edge = 90, vh = innerHeight - 90;
+  let dy = 0;
+  if (drag.y < edge) dy = -Math.ceil((edge - drag.y) / 8);
+  else if (drag.y > vh - edge) dy = Math.ceil((drag.y - (vh - edge)) / 8);
+  if (dy) { scrollBy(0, dy); placeDrag(); }
+  drag.raf = requestAnimationFrame(autoScroll);
+}
+function endDrag(e) {
+  if (!drag || (e && e.pointerId !== drag.pid)) return;
+  const { row, raf } = drag; cancelAnimationFrame(raf);
+  window.removeEventListener('pointermove', onDragMove); window.removeEventListener('pointerup', endDrag); window.removeEventListener('pointercancel', endDrag);
+  row.classList.remove('dragging'); row.style.transform = ''; document.body.classList.remove('is-dragging');
+  const prev = row.previousElementSibling, next = row.nextElementSibling;
+  const id = row.dataset.id, t = S.tasks[id];
+  drag = null; suppressClick = true; setTimeout(() => suppressClick = false, 200);
+  if (!t) return;
+  const kp = prev ? rowKey(prev) : null, kn = next ? rowKey(next) : null;
+  let key;
+  if (kp == null && kn == null) return;
+  if (kp == null) key = kn + 1;
+  else if (kn == null) key = kp - 1;
+  else key = (kp + kn) / 2;
+  if (key === sortKey(t) && (kp == null || kp > key) && (kn == null || kn < key)) { render(); return; }
+  upd(id, { o: key }); commit();
+}
+document.addEventListener('touchmove', e => { if (drag) e.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', e => { if (drag || e.target.closest('.list[data-reorder] > .row')) e.preventDefault(); });
+
 document.addEventListener('click', e => {
+  if (suppressClick) { e.preventDefault(); e.stopPropagation(); return; }
   const b = e.target.closest('[data-act]'); if (!b) return;
   const fn = ACT[b.dataset.act]; if (fn) { e.preventDefault(); fn(b.dataset.id, b, e); }
 });
@@ -884,6 +1026,11 @@ document.addEventListener('submit', e => {
   }
   if (kind === 'deleg') {
     upd(sheetArg, { st: 'wait', who: $('#dw').value.trim() }); closeSheet(); commit(); toast('Přesunuto do „Čeká na ostatní“');
+  }
+  if (kind === 'note') {
+    const inp = $('#nIn'), v = inp.value.trim(), t = S.tasks[sheetArg]; if (!v || !t) return;
+    upd(t.id, { notes: [{ id: newId(), t: v, c: Date.now() }, ...(t.notes || [])] });
+    saveLocal(); scheduleSync(); render(); refreshNotes(); inp.value = ''; inp.focus();
   }
   if (kind === 'goal') {
     S.goal = { t: $('#gt').value.trim(), u: Date.now() }; closeSheet(); commit();
@@ -917,7 +1064,7 @@ function mergeState(a, b) {
   const tasks = { ...a.tasks };
   for (const [id, t] of Object.entries(b.tasks)) if (!tasks[id] || (t.u || 0) > (tasks[id].u || 0)) tasks[id] = t;
   const goal = (b.goal?.u || 0) > (a.goal?.u || 0) ? b.goal : (a.goal || { t: '', u: 0 });
-  return prune({ tasks, goal });
+  return prune(normalize({ tasks, goal }));
 }
 function syncText() {
   if (!FIREBASE_CONFIG) return 'Není nastavená. Úkoly jsou jen v tomto zařízení. Postup je v souboru README.';
