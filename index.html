@@ -308,7 +308,7 @@ const FIREBASE_CONFIG = {
 };
 */
 
-const VERSION = '1.9.0';
+const VERSION = '1.9.1';
 const LS_KEY = 'kameny.v1';
 const MAX_MIT = 3, MAX_ROCKS = 6;
 const DAYS = ['Po','Út','St','Čt','Pá','So','Ne'];
@@ -618,12 +618,17 @@ function vWeek() {
       <button class="btn small" data-act="rock" data-id="${t.id}">Na tento týden</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
   }
 
-  const doneWeek = all.filter(t => t.st === 'done' && t.done >= ws.getTime()).sort((a,b) => b.done - a.done);
-  const counts = [0,0,0,0,0,0,0]; doneWeek.forEach(t => counts[dow(new Date(t.done))]++);
+  // Zpětné zrcátko: vždy dnešek + předchozích 6 dní, nezávisle na začátku týdne
+  const d0 = new Date(); d0.setHours(0, 0, 0, 0);
+  const days7 = Array.from({ length: 7 }, (_, i) => { const d = new Date(d0); d.setDate(d.getDate() - 6 + i); return d; });
+  const from = days7[0].getTime();
+  const doneWeek = all.filter(t => t.st === 'done' && t.done >= from).sort((a,b) => b.done - a.done);
+  const counts = [0,0,0,0,0,0,0];
+  doneWeek.forEach(t => { const dd = new Date(t.done); dd.setHours(0, 0, 0, 0); const i = Math.round((dd - from) / DAY); if (i >= 0 && i < 7) counts[i]++; });
   const mx = Math.max(1, ...counts);
-  h += `<h2>Zpětné zrcátko <small>${doneWeek.length} ${pl(doneWeek.length,'hotový úkol','hotové úkoly','hotových úkolů')}</small></h2>`;
-  h += `<div class="bars">${counts.map((c, i) => `<div class="bar ${i === di ? 'today' : ''}" style="height:${Math.round(c / mx * 100)}%"></div>`).join('')}</div>`;
-  h += `<div class="barlbl">${counts.map((c, i) => `<span><b>${c || ''}</b>${DAYS[i]}</span>`).join('')}</div>`;
+  h += `<h2>Zpětné zrcátko <small>${doneWeek.length} ${pl(doneWeek.length,'hotový úkol','hotové úkoly','hotových úkolů')} za 7 dní</small></h2>`;
+  h += `<div class="bars">${counts.map((c, i) => `<div class="bar ${i === 6 ? 'today' : ''}" style="height:${Math.round(c / mx * 100)}%"></div>`).join('')}</div>`;
+  h += `<div class="barlbl">${counts.map((c, i) => `<span><b>${c || '&nbsp;'}</b>${i === 6 ? 'Dnes' : DAYS[dow(days7[i])]}</span>`).join('')}</div>`;
   if (doneWeek.length) h += `<div class="list" style="margin-top:14px">${doneWeek.slice(0, 15).map(listRow).join('')}</div>`;
 
   return { title: 'Týden', sub: `${wi.num}. týden, ${fmt(ws)} – ${fmt(we)}`, html: h };
@@ -798,7 +803,7 @@ function drawSheet(focusSel) {
       <p>Nejdřív do nádoby velké kameny, pak štěrk a písek. Obráceně by drobnosti zaplnily celý den a na důležité věci by nezbylo místo.</p>
       <p>Jednou týdně (v neděli večer nebo v pondělí ráno) projdi seznam úkolů a zeptej se: co chci tento týden opravdu zvládnout? Vyber 4 až 6 velkých kamenů a tlačítky Po–Ne je rozlož do dnů, ideálně jeden až dva na den.</p>
       <p>Nahoře je <b>roční cíl</b>, jedna věc, ke které chceš za rok dojít. Aspoň jeden velký kámen týdně by měl vést k němu.</p>
-      <p>Dole je <b>zpětné zrcátko</b>: co všechno jsi za týden dokončil. Obvykle toho je víc, než máš pocit.</p>
+      <p>Dole je <b>zpětné zrcátko</b>: co všechno jsi dokončil za posledních 7 dní, dnešek je vpravo. Obvykle toho je víc, než máš pocit.</p>
 
 
       <h4>Jak to vypadá v praxi</h4>
