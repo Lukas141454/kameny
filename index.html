@@ -113,7 +113,12 @@ h2 small{font-family:var(--font);font-weight:500;color:var(--muted);font-size:.8
 .capture:focus-within{border-color:var(--moss)}
 
 .inbox-item{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:14px 14px 12px;margin-bottom:10px}
-.inbox-item .t{font-weight:500;cursor:pointer;overflow-wrap:anywhere;padding:0 2px}
+.inbox-item .t{font-weight:500;cursor:pointer;overflow-wrap:anywhere;padding:0 2px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.row .tt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mini{width:40px;height:40px;display:grid;place-items:center;flex:none;border-radius:50%;color:var(--moss);background:var(--moss-soft)}
+.mini svg{width:19px;height:19px;stroke-width:2.2}
+.mini:active{transform:scale(.92)}
+textarea.grow{min-height:0;resize:none;overflow:hidden;line-height:1.4}
 .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .act{padding:7px 12px;border-radius:999px;background:var(--bg);font-size:.86rem;font-weight:600}
 .act.go{background:var(--moss-soft);color:var(--moss)}
@@ -308,7 +313,7 @@ const FIREBASE_CONFIG = {
 };
 */
 
-const VERSION = '1.9.1';
+const VERSION = '1.9.2';
 const LS_KEY = 'kameny.v1';
 const MAX_MIT = 3, MAX_ROCKS = 6;
 const DAYS = ['Po','Út','St','Čt','Pá','So','Ne'];
@@ -324,6 +329,7 @@ const ICON = {
   trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12.5a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5L18 7M9 7V4.5A.5.5 0 0 1 9.5 4h5a.5.5 0 0 1 .5.5V7"/></svg>',
   folder:'<svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.2h8A1.5 1.5 0 0 1 20.5 9.7v8.8A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
   more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>'
 };
 
@@ -464,7 +470,7 @@ function listRow(t) {
   const td = dayKey(), d = t.st === 'done';
   return `<div class="row ${d ? 'is-done' : ''} ${t.imp && !d ? 'imp' : ''}" data-id="${t.id}">
     <button class="chk ${d ? 'on' : ''}" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
-    <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
+    <div class="t" data-act="edit" data-id="${t.id}"><span class="tt">${esc(t.t)}</span>${metaLine(t)}</div>
     ${d ? '' : `<button class="star ${t.imp ? 'on' : ''}" data-act="imp" data-id="${t.id}" aria-label="${t.imp ? 'Zrušit důležité' : 'Označit jako důležité'}" aria-pressed="${!!t.imp}">${ICON.star}</button>`}
     ${moreBtn(t.id)}
   </div>`;
@@ -569,8 +575,8 @@ function vTasks() {
   if (wait.length) {
     h += `<h2>Čeká na ostatní <small>${wait.length}</small></h2><div class="list" data-reorder>` + wait.map(t => `<div class="row" data-id="${t.id}">
       <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
-      <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
-      <button class="btn small ghost" data-act="tolist" data-id="${t.id}">Vzít zpět</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
+      <div class="t" data-act="edit" data-id="${t.id}"><span class="tt">${esc(t.t)}</span>${metaLine(t)}</div>
+      <button class="mini" data-act="tolist" data-id="${t.id}" aria-label="Vzít zpět do úkolů" title="Vzít zpět do úkolů">${ICON.up}</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
   }
   const later = free.filter(t => t.st === 'later').sort(newest);
   if (later.length) {
@@ -578,8 +584,8 @@ function vTasks() {
     if (laterOpen) {
       h += `<p class="hint" style="margin:-4px 2px 10px">Věci na někdy. Při týdenní revizi je projdi, jestli některá nedozrála.</p><div class="list" data-reorder>` + later.map(t => `<div class="row" data-id="${t.id}">
         <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
-        <div class="t" data-act="edit" data-id="${t.id}">${esc(t.t)}${metaLine(t)}</div>
-        <button class="btn small ghost" data-act="tolist" data-id="${t.id}">Do úkolů</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
+        <div class="t" data-act="edit" data-id="${t.id}"><span class="tt">${esc(t.t)}</span>${metaLine(t)}</div>
+        <button class="mini" data-act="tolist" data-id="${t.id}" aria-label="Do úkolů" title="Do úkolů">${ICON.up}</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
     }
   }
   const trashN = trashItems().length;
@@ -687,6 +693,8 @@ function stopDictation() { if (rec && recOn) { try { rec.abort(); } catch (e) {}
 /* ---------- spodní panel ---------- */
 let sheetKind = null, sheetArg = null;
 function openSheet(kind, arg) { sheetKind = kind; sheetArg = arg; drawSheet(); $('#sheet').classList.add('open'); $('#scrim').classList.add('open'); }
+function growAll() { document.querySelectorAll('textarea.grow').forEach(el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; }); }
+document.addEventListener('input', e => { if (e.target.matches && e.target.matches('textarea.grow')) growAll(); });
 function closeSheet() { stopDictation(); sheetKind = null; $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
 function drawSheet(focusSel) {
   const el = $('#sheet'); let h = '<div class="grab"></div>';
@@ -704,7 +712,7 @@ function drawSheet(focusSel) {
     const t = S.tasks[sheetArg]; if (!t) return closeSheet();
     const st = t.st === 'done' ? (t.prev || 'list') : t.st;
     h += `<h3>Upravit úkol</h3>
-      <label class="lab" for="eT">Název</label><input class="field" id="eT" value="${esc(t.t)}">
+      <label class="lab" for="eT">Název</label><textarea class="field grow" id="eT" rows="1">${esc(t.t)}</textarea>
       <label class="lab" for="nIn">Poznámky <span class="hint">(nejnovější nahoře)</span></label>
       <form class="capture notes-add" data-form="note"><input id="nIn" placeholder="Přidat poznámku" autocomplete="off" enterkeyhint="send"><button class="btn small" type="submit">Přidat</button></form>
       <div class="nlist" id="nList">${notesHtml(t)}</div>
@@ -797,7 +805,7 @@ function drawSheet(focusSel) {
       <h4><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.5M4 12h.5M4 18h.5"/></svg>Úkoly: seznam všeho k udělání</h4>
       <p>Tady leží všechno roztříděné. Je to zásobárna, ze které si vybíráš. Nemusíš ji mít celou pod kontrolou, jen víš, kam sáhnout. Podržením úkol přesuneš, kam chceš. <b>Hvězdičkou</b> označíš úkol jako důležitý: posune se úplně nahoru a uvidíš ho i nahoře v Inboxu.</p>
       <p><b>Složky</b> jsou na projekty. Tlačítkem <b>Nová složka</b> založíš složku, otevřeš ji a píšeš do ní úkoly k danému projektu. Z inboxu pošleš položku rovnou do složky tlačítkem <b>Do složky</b>, u hotového úkolu změníš složku v úpravě (⋯). Úkoly ze složek můžeš dál dávat jako velké kameny.</p>
-      <p>Dole je sbalený oddíl <b>Později</b> pro věci na někdy, třeba „vymalovat garáž“. V hlavním seznamu tě nerozptylují a při týdenní revizi je projdeš, jestli některá nedozrála. Tlačítkem <b>Do úkolů</b> ji vrátíš zpět.</p>
+      <p>Dole je sbalený oddíl <b>Později</b> pro věci na někdy, třeba „vymalovat garáž“. V hlavním seznamu tě nerozptylují a při týdenní revizi je projdeš, jestli některá nedozrála. Šipkou nahoru ji vrátíš do úkolů.</p>
 
       <h4>${ICON.rock}Týden: velké kameny</h4>
       <p>Nejdřív do nádoby velké kameny, pak štěrk a písek. Obráceně by drobnosti zaplnily celý den a na důležité věci by nezbylo místo.</p>
@@ -842,6 +850,7 @@ function drawSheet(focusSel) {
       <div class="btns"><button class="btn ghost" data-act="reload">Načíst novou verzi</button></div></div>`;
   }
   el.innerHTML = h;
+  requestAnimationFrame(growAll);
   if (focusSel) setTimeout(() => { const f = $(focusSel); if (f) f.focus(); }, 60);
 }
 
