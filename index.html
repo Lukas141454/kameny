@@ -148,7 +148,7 @@ textarea.grow{min-height:0;resize:none;overflow:hidden;line-height:1.4}
 
 /* Spodní navigace */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);height:var(--nav-h)}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);height:var(--nav-h)}
 nav.tabs button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.74rem;font-weight:600;color:var(--muted);text-align:center}
 nav.tabs button.on{color:var(--moss)}
 .badge{position:absolute;top:7px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--ochre);color:#fff;font-size:.7rem;line-height:18px}
@@ -289,6 +289,7 @@ body.is-dragging *{cursor:grabbing!important}
 <nav class="tabs"><div class="in">
   <button data-act="go" data-v="inbox"><svg viewBox="0 0 24 24"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>Inbox<span class="badge" id="inboxBadge" hidden></span></button>
   <button data-act="go" data-v="tasks"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.5M4 12h.5M4 18h.5"/></svg>Úkoly<span class="badge" id="tasksBadge" hidden></span></button>
+  <button data-act="go" data-v="later"><svg viewBox="0 0 24 24"><path d="M7 3.5h10M7 20.5h10M8 3.5c0 4.5 4 5.5 4 8.5s-4 4-4 8.5M16 3.5c0 4.5-4 5.5-4 8.5s4 4 4 8.5"/></svg>Později</button>
   <button data-act="go" data-v="week"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="8" ry="3"/><ellipse cx="12" cy="12.3" rx="5.5" ry="2.6"/><ellipse cx="12" cy="7.2" rx="3" ry="2"/></svg>Týden</button>
 </div></nav>
 
@@ -313,7 +314,7 @@ const FIREBASE_CONFIG = {
 };
 */
 
-const VERSION = '1.9.2';
+const VERSION = '2.0.0';
 const LS_KEY = 'kameny.v1';
 const MAX_MIT = 3, MAX_ROCKS = 6;
 const DAYS = ['Po','Út','St','Čt','Pá','So','Ne'];
@@ -431,7 +432,7 @@ function render() {
   // Úkoly: seznam + Čeká na ostatní, bez Později
   const nt = alive().filter(t => t.st === 'list' || t.st === 'wait').length;
   const tb = $('#tasksBadge'); tb.textContent = nt > 99 ? '99+' : nt; tb.hidden = !nt;
-  const V = ({ inbox: vInbox, tasks: vTasks, week: vWeek }[view] || vTasks)();
+  const V = ({ inbox: vInbox, tasks: vTasks, later: vLater, week: vWeek }[view] || vTasks)();
   $('#title').textContent = V.title; $('#sub').textContent = V.sub; $('#view').innerHTML = V.html;
 }
 
@@ -459,7 +460,6 @@ function metaLine(t) {
   const bits = [];
   if (t.rock === weekKey()) bits.push(`<span class="tag">${ICON.rock}Velký kámen${t.day != null ? ', ' + DAYS[t.day] : ''}</span>`);
   if (t.st === 'wait' && t.who) bits.push('Čeká na: ' + esc(t.who));
-  if (renderingFolder && t.st === 'later') bits.push('Později');
   const fo = folderOf(t);
   if (fo && !renderingFolder) bits.push(`<span class="ftag">${esc(fo.name)}</span>`);
   const ns = notesOf(t);
@@ -539,7 +539,7 @@ function vInbox() {
 
 function vFolder(fo) {
   const all = alive().filter(t => t.f === fo.id);
-  const open = all.filter(t => t.st === 'list' || t.st === 'wait' || t.st === 'later').sort(newest);
+  const open = all.filter(t => t.st === 'list' || t.st === 'wait').sort(newest);
   const doneN = all.filter(t => t.st === 'done').length;
   renderingFolder = true;
   let h = `<button class="back" data-act="closeFolder">${ICON.back}Všechny úkoly</button>`;
@@ -578,19 +578,24 @@ function vTasks() {
       <div class="t" data-act="edit" data-id="${t.id}"><span class="tt">${esc(t.t)}</span>${metaLine(t)}</div>
       <button class="mini" data-act="tolist" data-id="${t.id}" aria-label="Vzít zpět do úkolů" title="Vzít zpět do úkolů">${ICON.up}</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
   }
-  const later = free.filter(t => t.st === 'later').sort(newest);
-  if (later.length) {
-    h += `<button class="secthd ${laterOpen ? 'open' : ''}" id="laterSec" data-act="toggleLater" aria-expanded="${laterOpen}">Později <small>${later.length} <span class="chev">▾</span></small></button>`;
-    if (laterOpen) {
-      h += `<p class="hint" style="margin:-4px 2px 10px">Věci na někdy. Při týdenní revizi je projdi, jestli některá nedozrála.</p><div class="list" data-reorder>` + later.map(t => `<div class="row" data-id="${t.id}">
-        <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
-        <div class="t" data-act="edit" data-id="${t.id}"><span class="tt">${esc(t.t)}</span>${metaLine(t)}</div>
-        <button class="mini" data-act="tolist" data-id="${t.id}" aria-label="Do úkolů" title="Do úkolů">${ICON.up}</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
-    }
-  }
   const trashN = trashItems().length;
   if (trashN) h += `<button class="trashlink" data-act="trash">${ICON.trash}Koš (${trashN})</button>`;
   return { title: 'Úkoly', sub: `${list.length} ${pl(list.length,'úkol','úkoly','úkolů')} v seznamu`, html: h };
+}
+
+function vLater() {
+  const later = alive().filter(t => t.st === 'later').sort(newest);
+  let h = `<form class="capture" data-form="later"><input id="capLater" placeholder="Nový úkol na později" autocomplete="off" enterkeyhint="send" aria-label="Nový úkol na později"><button class="btn small" type="submit">Přidat</button></form>`;
+  if (!later.length) {
+    h += `<div class="empty" style="margin-top:14px"><p class="big">Nic na později.</p><p class="hint">Sem patří věci na někdy, třeba „vymalovat garáž“. V Inboxu je sem pošleš tlačítkem Později.</p></div>`;
+  } else {
+    h += `<p class="hint pad">Věci na někdy. Při týdenní revizi je projdi, jestli některá nedozrála. Šipkou nahoru ji přesuneš do Úkolů.</p>`;
+    h += `<div class="list" data-reorder>` + later.map(t => `<div class="row" data-id="${t.id}">
+        <button class="chk" data-act="done" data-id="${t.id}" aria-label="Hotovo">${ICON.check}</button>
+        <div class="t" data-act="edit" data-id="${t.id}"><span class="tt">${esc(t.t)}</span>${metaLine(t)}</div>
+        <button class="mini" data-act="tolist" data-id="${t.id}" aria-label="Do úkolů" title="Do úkolů">${ICON.up}</button>${moreBtn(t.id)}</div>`).join('') + `</div>`;
+  }
+  return { title: 'Později', sub: later.length ? `${later.length} ${pl(later.length,'úkol','úkoly','úkolů')} na někdy` : 'Prázdné', html: h };
 }
 
 function vWeek() {
@@ -805,7 +810,7 @@ function drawSheet(focusSel) {
       <h4><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.5M4 12h.5M4 18h.5"/></svg>Úkoly: seznam všeho k udělání</h4>
       <p>Tady leží všechno roztříděné. Je to zásobárna, ze které si vybíráš. Nemusíš ji mít celou pod kontrolou, jen víš, kam sáhnout. Podržením úkol přesuneš, kam chceš. <b>Hvězdičkou</b> označíš úkol jako důležitý: posune se úplně nahoru a uvidíš ho i nahoře v Inboxu.</p>
       <p><b>Složky</b> jsou na projekty. Tlačítkem <b>Nová složka</b> založíš složku, otevřeš ji a píšeš do ní úkoly k danému projektu. Z inboxu pošleš položku rovnou do složky tlačítkem <b>Do složky</b>, u hotového úkolu změníš složku v úpravě (⋯). Úkoly ze složek můžeš dál dávat jako velké kameny.</p>
-      <p>Dole je sbalený oddíl <b>Později</b> pro věci na někdy, třeba „vymalovat garáž“. V hlavním seznamu tě nerozptylují a při týdenní revizi je projdeš, jestli některá nedozrála. Šipkou nahoru ji vrátíš do úkolů.</p>
+      <p>Věci na někdy, třeba „vymalovat garáž“, mají vlastní záložku <b>Později</b>. V Úkolech tě nerozptylují a při týdenní revizi je projdeš, jestli některá nedozrála. Šipkou nahoru ji vrátíš do úkolů.</p>
 
       <h4>${ICON.rock}Týden: velké kameny</h4>
       <p>Nejdřív do nádoby velké kameny, pak štěrk a písek. Obráceně by drobnosti zaplnily celý den a na důležité věci by nezbylo místo.</p>
@@ -1012,7 +1017,7 @@ const ACT = {
   delEdit() { const id = sheetArg; trashTask(id); closeSheet(); commit(); toast('Přesunuto do koše', () => { restoreTask(id); commit(); }); },
   later(id) { upd(id, { st: 'later', who: '' }); commit(); toast('Odloženo do Později'); },
   toggleLater() { laterOpen = !laterOpen; localStorage.setItem('kameny.laterOpen', laterOpen ? '1' : '0'); render(); },
-  openLater() { laterOpen = true; localStorage.setItem('kameny.laterOpen', '1'); view = 'tasks'; localStorage.setItem('kameny.view', view); render(); const s = $('#laterSec'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+  openLater() { view = 'later'; localStorage.setItem('kameny.view', view); render(); const s = $('#laterSec'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
   trash() { openSheet('trash'); },
   restore(id) { restoreTask(id); commit(); drawSheet(); toast('Obnoveno'); if (!trashItems().length) closeSheet(); },
   purge(id) { upd(id, { purge: true }); commit(); drawSheet(); if (!trashItems().length) closeSheet(); },
@@ -1150,6 +1155,10 @@ document.addEventListener('submit', e => {
     const n = Date.now(), id = newId();
     S.folders[id] = { id, name, c: n, u: n, del: false };
     ACT.moveToFolder(id);
+  }
+  if (kind === 'later') {
+    const inp = $('#capLater'), v = inp.value.trim(); if (!v) return;
+    addTask(v, { st: 'later' }); commit(); const again = $('#capLater'); if (again) again.focus();
   }
   if (kind === 'note') {
     const inp = $('#nIn'), v = inp.value.trim(), t = S.tasks[sheetArg]; if (!v || !t) return;
